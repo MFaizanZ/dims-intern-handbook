@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en" data-loc="page">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>13 · DIMS Backend Deep-Dive — DIMS Intern Handbook</title>
+  <link rel="stylesheet" href="../assets/css/handbook.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%232dd4bf'/><text x='50' y='72' font-size='62' text-anchor='middle' fill='%23042' font-family='sans-serif' font-weight='bold'>D</text></svg>">
+  <script src="../assets/js/manifest.js"></script>
+  <script src="../assets/js/handbook.js" defer></script>
+</head>
+<body>
+  <div class="scrim"></div>
+  <div class="layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="content">
+      <header class="topbar" id="topbar"></header>
+      <main class="article" data-page-id="13-dims-backend">
+
+        <div class="page-head">
+          <div class="kicker">THE SOFTWARE · 13</div>
+          <h1>DIMS Backend Deep-Dive</h1>
+          <p class="lead">Chapter 12 gave you the map. Now we walk the engine room. The <span class="term" data-term="backend">backend</span> is the part of DIMS that talks to the dock, plans missions, ingests telemetry, runs AI, raises alerts, and answers the console. If you work on DIMS, you will almost certainly work here — so let’s make it concrete.</p>
+        </div>
+
+        <h2>The one mental model</h2>
+        <p>The whole backend is a single Python service — the <strong>dji-bridge</strong> — sitting between a <em>message broker</em> and a <em>database</em>. The dock and drone never call our code directly; they publish and subscribe <span class="term" data-term="mqtt">MQTT</span> messages, and the bridge listens. Everything else (planning a flight, storing telemetry, detecting fire, pinning a coordinate) hangs off that one connection.</p>
+
+        <div class="analogy">
+          <div class="ct">🧩 Analogy</div>
+          <p>Think of an air-traffic control tower. The aircraft don’t walk into the office — they talk over one shared radio frequency (that’s MQTT). One controller (the bridge) is tuned to that frequency, and behind them sits a room of specialists: one updates the flight log, one watches the radar, one writes the incident report. The bridge wires all those specialists onto the one radio.</p>
+        </div>
+
+        <h2>The stack</h2>
+        <p>Before the parts, the materials. Every one of these runs locally for you via <strong>Docker Compose</strong>, so you get the real broker, the real database, and the real object store on your laptop — no cloud account needed.</p>
+
+        <div class="specs">
+          <div class="spec"><div class="k">Language</div><div class="v">Python<span class="u">3.12</span></div><div class="u">FastAPI + paho-mqtt</div></div>
+          <div class="spec"><div class="k">Broker</div><div class="v">EMQX</div><div class="u">the MQTT message bus</div></div>
+          <div class="spec"><div class="k">Database</div><div class="v">Postgres</div><div class="u">+ PostGIS + TimescaleDB</div></div>
+          <div class="spec"><div class="k">Cache</div><div class="v">Redis</div><div class="u">ids + fast state</div></div>
+          <div class="spec"><div class="k">Object store</div><div class="v">MinIO</div><div class="u">S3-compatible, holds media</div></div>
+          <div class="spec"><div class="k">Env / deps</div><div class="v">uv</div><div class="u">Python; pnpm for JS</div></div>
+        </div>
+
+        <p>A few of those names will be new:</p>
+        <div class="chips">
+          <span class="chip teal">EMQX = the MQTT broker</span>
+          <span class="chip">PostGIS = geography in <span class="term" data-term="postgres">Postgres</span></span>
+          <span class="chip">TimescaleDB = time-series tables</span>
+          <span class="chip">Redis = in-memory cache</span>
+          <span class="chip">MinIO = self-hosted S3 bucket</span>
+        </div>
+        <p>PostGIS lets the database understand latitudes and longitudes; TimescaleDB makes the endless stream of <span class="term" data-term="telemetry">telemetry</span> rows efficient to store and query over time; MinIO is where every photo the drone takes lands. The JavaScript console (chapter 14) uses <code>pnpm</code>; the Python backend uses <code>uv</code>.</p>
+
+        <h2>The dji-bridge &amp; MQTT</h2>
+        <p>When you run <code>python -m dji_bridge</code>, you start what we call the <strong>composition root</strong>. That is a fancy name for a simple, important idea: one place that builds everything and wires it together. The composition root reads its settings from the environment, opens <em>one</em> MQTT client, and attaches every handler module onto it — onboarding, flighttask, telemetry, media, alerts, and the operator <span class="term" data-term="api">API</span>.</p>
+        <p>It then does three grown-up things that matter in production: it <strong>pre-warms</strong> (loads what it needs before traffic arrives), it <strong>re-subscribes on reconnect</strong> (if the broker connection drops, it re-registers all its topics automatically), and it <strong>shuts down cleanly</strong>. Because the dock is just another MQTT client, the seam between a simulated dock and a real one is pure <em>configuration</em> — you point the bridge at a different broker and serial number. <strong>No code changes.</strong> Hold onto that idea; it comes back at the end.</p>
+
+        <div class="callout key">
+          <div class="ct">🔑 The one idea to remember</div>
+          <p>The bridge is a single MQTT client with many handlers bolted onto it. Swapping the simulator for a real <span class="term" data-term="dock3">Dock 3</span> is a config change, not a code change. That property is what lets us build the entire product before the hardware arrives.</p>
+        </div>
+
+        <h2>Onboarding a dock (the handshake)</h2>
+        <p>A dock can’t just start streaming. It has to <strong>onboard</strong> first: prove its license, learn the cloud’s configuration, and bind to our organization. This is the dock↔cloud handshake, and it only works if two boring-but-critical things line up.</p>
+
+        <div class="callout warn">
+          <div class="ct">⚠ Two gotchas that will bite you</div>
+          <p>The secure link needs <strong>synchronized clocks</strong> (<span class="term" data-term="ntp">NTP</span>) and valid <strong>certificates</strong> (<span class="term" data-term="tls">TLS</span>). If the dock’s clock is skewed or a cert is wrong, the connection silently fails with unhelpful errors. When a dock “won’t connect,” suspect time and certs first.</p>
+        </div>
+
+        <details class="deep">
+          <summary>Want the deep version? The two Dock-2 → Dock-3 fixes</summary>
+          <div class="deep-body">
+            <p>Our onboarding code first worked against a DJI <strong>Dock 2</strong>. Moving to <strong>Dock 3</strong> broke the bind, and the cause was tiny but real — exactly the kind of bug you’ll chase here:</p>
+            <ol>
+              <li><strong>The config <code>app_id</code> must be a STRING, not an integer.</strong> Dock 2 tolerated a numeric <code>app_id</code>; Dock 3 rejects it. One pair of quotes was the difference between “connected” and “nothing happens.”</li>
+              <li><strong>The org-bind reply needs an <code>err_infos</code> entry per device.</strong> The reply has to carry one status entry for <em>each</em> device being bound. If that array comes back empty, the dock reports the maddeningly vague error <em>“invalid org id”</em> — even though the org id was fine.</li>
+            </ol>
+            <p>Lesson: with the <span class="term" data-term="cloudapi">Cloud API</span>, the error message often points at the wrong thing. Trust the wire shape, not the wording.</p>
+          </div>
+        </details>
+
+        <figure>
+          <img src="../assets/img/screenshots/2026-06-24-dock-telem-before.png" alt="Live telemetry from a connected dock and aircraft">
+          <figcaption>Once a dock is onboarded, its live telemetry flows through the bridge and into the operator API — position, battery, RTK, mode.</figcaption>
+        </figure>
+
+        <h2>The mission lifecycle (flighttask)</h2>
+        <p>“Fly to these points and take photos” has to become something a drone can actually execute. The bridge does that through the <strong>flighttask</strong> flow:</p>
+        <ol>
+          <li>An <strong>outbound service request</strong> says “run this mission” to the dock.</li>
+          <li>The cloud <strong>generates the wayline</strong> as a <strong>WPML/<span class="term" data-term="kmz">KMZ</span></strong> file — DJI’s flight-plan format describing waypoints, altitudes, and actions.</li>
+          <li>It <strong>uploads that KMZ to MinIO</strong> and hands the dock a link to fetch it.</li>
+          <li><strong>prepare</strong> → the dock downloads and validates the plan.</li>
+          <li><strong>execute</strong> → the drone actually flies it.</li>
+          <li>The dock <strong>streams progress events</strong> back (waypoint reached, percent complete, finished).</li>
+        </ol>
+        <p>You won’t hand-write KMZ files — the console’s mission planner (<a href="14-dims-frontend.html">chapter 14</a>) is the friendly front door to this exact flow. The backend turns the planner’s waypoints into the WPML the dock understands.</p>
+
+        <h2>Telemetry &amp; health (OSD + HMS)</h2>
+        <p>While a drone flies, it gushes data. Two handlers catch it. The <strong><span class="term" data-term="osd">OSD</span> handler</strong> (“On-Screen Display” — DJI’s name for the live telemetry stream) feeds a per-device, thread-safe <strong>“latest state” registry</strong>: for each serial number it keeps the freshest lat/lon, height, attitude, speed, battery, <span class="term" data-term="rtk">RTK</span> fix, GPS quality, and flight mode. The <strong>HMS handler</strong> (“Health Management System”) stores health alarms — low battery, strong wind, sensor faults.</p>
+        <div class="callout note">
+          <div class="ct">A subtlety to remember</div>
+          <p>The <strong>dock’s</strong> OSD telemetry is not the same as the <strong>aircraft’s</strong> OSD. They’re separate devices on separate topics with different fields. Mixing them up is a classic beginner mistake — when you read telemetry, always know <em>which</em> serial number you’re looking at.</p>
+        </div>
+
+        <h2>The operator API</h2>
+        <p>The console and other tools don’t speak MQTT — they speak <span class="term" data-term="rest">REST</span>. So the bridge process also runs a small <span class="term" data-term="fastapi">FastAPI</span> app, the <strong>operator API</strong>, that shares the live MQTT client. Mutating routes can require an <code>X-API-Key</code> header; read routes are open within the trusted network.</p>
+
+        <div class="table-wrap"><table>
+          <thead><tr><th>Method &amp; route</th><th>What it does</th></tr></thead>
+          <tbody>
+            <tr><td><code>POST /missions</code></td><td>Start a mission (the planner’s “fly” button)</td></tr>
+            <tr><td><code>POST /missions/{id}/stop</code></td><td>Stop a running mission</td></tr>
+            <tr><td><code>POST /missions/pause</code> · <code>/resume</code></td><td>Pause / resume the active mission</td></tr>
+            <tr><td><code>GET /telemetry</code> · <code>/telemetry/{sn}</code></td><td>Latest state for all devices, or one serial number</td></tr>
+            <tr><td><code>GET /hms</code></td><td>Current health alarms</td></tr>
+            <tr><td><code>GET /alerts</code> · <code>POST /alerts/{id}/ack</code></td><td>List alerts; acknowledge one</td></tr>
+            <tr><td><code>GET /detections</code> · <code>/missions</code></td><td>AI detections; mission records</td></tr>
+          </tbody>
+        </table></div>
+
+        <p>Errors are mapped to honest HTTP codes so callers can react: <code>502</code> (the dock rejected the command), <code>504</code> (the dock timed out), <code>404</code> (not found), and <code>422</code> (your request body was invalid). Here are two of the most common calls — start a mission, then poll one aircraft’s telemetry:</p>
+
+        <pre><code># Start a mission — the same call the console's "fly" button makes
+POST /missions
+Content-Type: application/json
+X-API-Key: &lt;key&gt;
+
+{
+  "name": "bomunsan-north-ridge-fire",
+  "gateway_sn": "VIRTUAL-DOCK-0001",
+  "waypoints": [
+    {"latitude": 36.3270, "longitude": 127.4015, "altitude": 100},
+    {"latitude": 36.3290, "longitude": 127.4035, "altitude": 120, "take_photo": true}
+  ]
+}
+
+# Then watch one aircraft's live state
+GET /telemetry/VIRTUAL-M4TD-0001
+→ { "lat": 36.3281, "lon": 127.4026, "height": 118.4,
+    "speed": 9.2, "battery": 76, "rtk": "FIX", "mode": "WAYLINE" }</code></pre>
+
+        <h2>The media pipeline</h2>
+        <p>When the drone takes a photo, the bridge never streams the image bytes through itself — that wouldn’t scale. Instead it uses <strong>scoped storage credentials</strong> (an <strong>STS</strong> token — temporary, limited-permission keys). The flow:</p>
+        <ol>
+          <li>The dock asks the bridge for STS credentials for the media bucket.</li>
+          <li>The dock <strong>uploads the photo straight to MinIO</strong> using those short-lived keys.</li>
+          <li>A <strong>callback</strong> tells the bridge “file X landed,” and the bridge records it — then <strong>enriches</strong> it with the <strong>camera pose</strong> read from the photo’s <strong>XMP metadata</strong> (the orientation/position DJI embeds in the JPEG).</li>
+        </ol>
+        <p>That pose — where the camera was and where it was pointing — is exactly what the coordinatizer needs to turn a pixel into a map pin (<a href="15-ai-in-dims.html">chapter 15</a>).</p>
+
+        <h2>The alert pipeline (the ≤8-second promise)</h2>
+        <p>This is the payoff of the whole platform. When the AI detects fire or smoke and the coordinatizer attaches a real-world coordinate, the alert pipeline:</p>
+        <ol>
+          <li><strong>Classifies severity</strong> from the detection.</li>
+          <li>Saves an <strong>idempotent <code>alerts</code> row</strong> — “idempotent” means the same detection won’t create duplicate alerts.</li>
+          <li><strong>Fans it out</strong>, bounded and non-blocking, to a <strong>webhook</strong> (mobile + dashboard) <em>and</em> the <strong>city disaster-safety platform</strong> connector.</li>
+        </ol>
+        <p>“Bounded and non-blocking” means the fan-out can never stall the pipeline — a slow downstream service won’t hold up the next detection. The whole chain, from detection to delivered alert, meets a <strong>≤8-second</strong> KPI — fast enough to matter for a real forest fire.</p>
+
+        <figure>
+          <img src="../assets/img/screenshots/2026-06-23-backend-switcher.png" alt="The DIMS demo/real backend switcher">
+          <figcaption>The demo/real backend switch. The same bridge, the same handlers, the same API — only the dock behind it changes.</figcaption>
+        </figure>
+
+        <h2>The simulator — how you’ll actually test</h2>
+        <p>You almost certainly won’t have a Dock 3 on your desk. You don’t need one. Running <code>python -m dji_bridge.simulator</code> starts a <strong><span class="term" data-term="sitl">SITL</span></strong> (“software-in-the-loop”) virtual dock that role-plays a real Dock 3 + <span class="term" data-term="m4td">Matrice 4TD</span> over the <em>same</em> broker.</p>
+
+        <div class="callout tip">
+          <div class="ct">💡 This is your daily workflow</div>
+          <p>The simulator onboards like a real dock, streams telemetry, <strong>flies the actual cloud-built KMZ</strong> with a real kinematic flight model, uploads <strong>real DJI-XMP JPEGs</strong>, and emits progress, media, and HMS. The bridge, detector, coordinatizer, alerter, and operator API all run <strong>completely unchanged</strong>. Almost all DIMS development and testing happens this way — safely, for free, with no hardware.</p>
+        </div>
+
+        <p>Because the simulator is only the <em>device side</em>, everything you build against it is the real product. When the hardware arrives, you don’t rewire anything — you stop the simulator and point the bridge at the real dock. That clean swap is the whole reason the backend is built the way it is.</p>
+
+        <div class="callout tip">
+          <div class="ct">✅ What you should now be able to say</div>
+          <p>“The DIMS backend is the dji-bridge: a Python 3.12 / FastAPI service that wires onboarding, flighttask, telemetry, media, and alert handlers onto one MQTT client through EMQX, backed by Postgres/PostGIS/TimescaleDB, Redis, and MinIO. Docks onboard over a TLS+NTP handshake; missions become WPML/KMZ waylines that prepare→execute→report progress; OSD feeds a live state registry and HMS tracks health; an operator REST API drives and reads it all; photos upload to MinIO via STS and get enriched with camera pose; and fire detections become idempotent, coordinatized alerts fanned out in ≤8 seconds. And I can test the entire thing against the SITL simulator with no hardware, because swapping in a real dock is config, not code.”</p>
+        </div>
+
+        <div id="pager"></div>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

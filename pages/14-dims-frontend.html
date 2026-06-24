@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en" data-loc="page">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>14 · DIMS Frontend Deep-Dive — DIMS Intern Handbook</title>
+  <link rel="stylesheet" href="../assets/css/handbook.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%232dd4bf'/><text x='50' y='72' font-size='62' text-anchor='middle' fill='%23042' font-family='sans-serif' font-weight='bold'>D</text></svg>">
+  <script src="../assets/js/manifest.js"></script>
+  <script src="../assets/js/handbook.js" defer></script>
+</head>
+<body>
+  <div class="scrim"></div>
+  <div class="layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="content">
+      <header class="topbar" id="topbar"></header>
+      <main class="article" data-page-id="14-dims-frontend">
+
+        <div class="page-head">
+          <div class="kicker">The Software · 14</div>
+          <h1>DIMS Frontend Deep-Dive</h1>
+          <p class="lead">The frontend is the <strong>operator console</strong> — the single screen a person uses to watch and command a mission. It’s an aerospace-style “mission control” built in the browser: a live 3D world with a glass instrument overlay. This chapter tours what’s on that screen and how it’s built.</p>
+        </div>
+
+        <h2>What it’s built from</h2>
+        <p>The console is a <span class="term" data-term="nextjs">Next.js</span> / <span class="term" data-term="react">React</span> app. The thing that makes it special is <span class="term" data-term="cesium">CesiumJS</span> — an engine that renders an accurate 3D globe and real terrain in the browser. DIMS drops a geo-accurate 3D <span class="term" data-term="twin">digital twin</span> of the site into the page and flies the drone inside it, live.</p>
+        <div class="chips">
+          <span class="chip teal">Next.js + React</span>
+          <span class="chip teal">CesiumJS (3D twin)</span>
+          <span class="chip">glass HUD overlay</span>
+          <span class="chip">Saira typeface · teal accent</span>
+          <span class="chip">REST + SSE data</span>
+        </div>
+        <p>The visual language is deliberate and <strong>locked</strong>: an immersive, full-bleed terrain twin with a translucent “glass” <span class="term" data-term="hud">HUD</span> floating on top — the same look this handbook borrows. It reads as a real cockpit, not a generic dashboard.</p>
+
+        <figure>
+          <img src="../assets/img/screenshots/console-hero.jpeg" alt="The DIMS operator console: 3D terrain twin with a glass HUD">
+          <figcaption>The console: full-bleed 3D terrain twin, the drone flying on it, with the glass instrument overlay.</figcaption>
+        </figure>
+
+        <h2>How the screen is organised</h2>
+        <p>Everything overlays one live 3D scene. The main pieces:</p>
+
+        <h3>The 3D twin (the stage)</h3>
+        <p>A real-terrain globe centred on the mission site. From the top bar you can switch basemaps (<strong>Natural</strong> / <strong>Lit</strong>) and camera modes — <strong>Free</strong> orbit, <strong>Follow</strong>, <strong>Chase</strong>, <strong>Top</strong> (2D), <strong>FPV</strong> — plus toggle the picture-in-picture video, “Fly here”, and the no-fly overlay.</p>
+        <figure>
+          <img src="../assets/img/screenshots/diag-01-2d.png" alt="The console camera-mode toolbar with the 2D top-down view active">
+          <figcaption>The camera-mode bar (top): basemaps + Free · Follow · Chase · Top · FPV views — shown here in <strong>2D top-down</strong>, with a planned survey route on the terrain.</figcaption>
+        </figure>
+
+        <h3>The flight instruments (PFD)</h3>
+        <p>A cockpit-style <span class="term" data-term="pfd">Primary Flight Display</span> shows attitude, heading, altitude and speed — the same instruments a pilot reads — driven live by the drone’s <span class="term" data-term="telemetry">telemetry</span>.</p>
+
+        <h3>The live video + AI (FPV)</h3>
+        <p>A picture-in-picture panel shows the drone’s <span class="term" data-term="fpv">first-person camera</span> feed, with the <span class="term" data-term="yolo">YOLO</span> detection boxes drawn directly on it (ch 15). When the AI detects something, the gimbal can auto-aim to keep the target centred.</p>
+        <figure>
+          <img src="../assets/img/screenshots/2026-06-22-fpv-acquire-slew.png" alt="The live FPV panel with the gimbal auto-aiming at a detection">
+          <figcaption>The live video panel — the gimbal slewing to acquire a detected target.</figcaption>
+        </figure>
+
+        <h2>Commanding a mission — the planner</h2>
+        <p>Operators don’t just watch; they plan. The mission editor is <strong>multi-mode</strong>: you can place waypoints manually or auto-generate common patterns — a <strong>lawnmower</strong> (back-and-forth survey), an <strong>orbit</strong> around a point, a <strong>go-to</strong>, or a patrol route. A “ground-profile” strip under the map shows the terrain beneath the route so you can keep a safe <span class="term" data-term="agl">above-ground</span> clearance.</p>
+        <div class="tabs">
+          <div class="tab-btns">
+            <button class="tab-btn">Manual</button>
+            <button class="tab-btn">Orbit</button>
+            <button class="tab-btn">Lawnmower</button>
+          </div>
+          <div class="tab-panel"><figure><img src="../assets/img/screenshots/editor-02-manual.png" alt="Manual waypoint route over 3D terrain"><figcaption>Manual: place and drag individual waypoints, each with its own altitude (here 40–130 m over Bomunsan terrain).</figcaption></figure></div>
+          <div class="tab-panel"><figure><img src="../assets/img/screenshots/editor-03-orbit.png" alt="Orbit mission mode — a closed loop around an area"><figcaption>Orbit: a closed loop around a point/area of interest.</figcaption></figure></div>
+          <div class="tab-panel"><figure><img src="../assets/img/screenshots/editor-04-lawnmower.png" alt="Lawnmower survey mission — serpentine full-coverage sweep"><figcaption>Lawnmower: a serpentine full-coverage survey sweep (22 waypoints across the site).</figcaption></figure></div>
+        </div>
+        <p>The planner has tabs for the route, mission settings, a flight-time/battery <strong>estimate</strong>, a <strong>safety</strong> check (does the path clear the terrain?), and a schedule. Each is a focused panel rather than one overwhelming form.</p>
+
+        <h3>Live control (DRC teleop)</h3>
+        <p>Beyond pre-planned routes, an operator can take live manual control through DIMS using <span class="term" data-term="drc">DRC</span> — “fly this direction”, “aim the gimbal there”, a <strong>fly-to</strong> click on the map — sent over the network to the drone.</p>
+        <figure>
+          <img src="../assets/img/screenshots/drc-console.png" alt="The DRC live teleoperation panel in the console">
+          <figcaption>Live teleoperation (DRC): direct manual control from the browser.</figcaption>
+        </figure>
+
+        <h2>Records &amp; replay</h2>
+        <p>Past flights are saved. The console lists previous <span class="term" data-term="wayline">missions</span> and can <strong>replay</strong> one — re-flying the recorded telemetry over the twin so you can review exactly what happened, like a flight-data recorder.</p>
+        <figure>
+          <img src="../assets/img/screenshots/f6-02-flights-list.jpeg" alt="The flight records list">
+          <figcaption>Flight records — select any past mission to replay it.</figcaption>
+        </figure>
+
+        <h2>Demo vs real, safely</h2>
+        <p>A backend switcher flips the whole console between the <span class="term" data-term="sitl">simulator</span> and a real <span class="term" data-term="dock3">Dock 3</span> (ch 13). And because a real drone must never launch by accident, the scheduler has an <strong>“armed” master gate</strong> that defaults to OFF — a deliberate safety guard you’ll see in the UI.</p>
+        <div class="img-2">
+          <figure><img src="../assets/img/screenshots/2026-06-23-backend-switcher.png" alt="Demo/real backend switcher"><figcaption>Switching demo ↔ real backend.</figcaption></figure>
+          <figure><img src="../assets/img/screenshots/2026-06-23-scheduler-arm.png" alt="Scheduler armed master gate"><figcaption>The scheduler “armed” safety gate.</figcaption></figure>
+        </div>
+
+        <h2>How the frontend gets its data</h2>
+        <p>The console talks to the operator <span class="term" data-term="api">API</span> (ch 13). It <em>reads</em> state with <span class="term" data-term="rest">REST</span> calls (e.g. <code>GET /telemetry</code>, <code>GET /alerts</code>) and <em>receives</em> live updates as they happen — new telemetry, new alerts — so the map and instruments move in real time. Commands like “start mission” or “fly to here” are sent as REST calls back to the API.</p>
+
+        <div class="callout tip">
+          <div class="ct">✅ What you should now be able to say</div>
+          <p>“The DIMS frontend is a Next.js/React operator console built around a CesiumJS 3D terrain twin with a glass HUD. It shows a cockpit PFD, the live FPV feed with AI boxes, and a multi-mode mission planner (manual/orbit/lawnmower) with terrain-safety checks. Operators can teleop live via DRC, replay past flights, and flip between simulator and real dock — with an armed safety gate. It reads telemetry and alerts from the operator API and renders them live.”</p>
+        </div>
+
+        <div id="pager"></div>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

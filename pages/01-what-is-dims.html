@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en" data-loc="page">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>01 · What is DIMS? — DIMS Intern Handbook</title>
+  <link rel="stylesheet" href="../assets/css/handbook.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%232dd4bf'/><text x='50' y='72' font-size='62' text-anchor='middle' fill='%23042' font-family='sans-serif' font-weight='bold'>D</text></svg>">
+  <script src="../assets/js/manifest.js"></script>
+  <script src="../assets/js/handbook.js" defer></script>
+</head>
+<body>
+  <div class="scrim"></div>
+  <div class="layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="content">
+      <header class="topbar" id="topbar"></header>
+      <main class="article" data-page-id="01-what-is-dims">
+
+        <div class="page-head">
+          <div class="kicker">Start Here · 01</div>
+          <h1>What is DIMS?</h1>
+          <p class="lead">DIMS is the product CNS is building. In one sentence: it makes a drone inspect things <em>by itself</em> and tell you exactly what it found and <em>where</em>. This chapter gives you the whole picture before we zoom into any single part.</p>
+        </div>
+
+        <h2>The problem we’re solving</h2>
+        <p>A huge amount of important infrastructure has to be <strong>inspected regularly</strong> — bridges, tower cranes, factories, solar farms, power lines, and forests at risk of fire. Today this is mostly done by <strong>people</strong>: someone climbs the structure, hangs off ropes, or walks the site with a camera. That is slow, expensive, and genuinely dangerous.</p>
+
+        <div class="analogy">
+          <div class="ct">🧩 Analogy</div>
+          <p>Think of a security guard who has to physically walk every floor of a skyscraper every hour, write down anything wrong, and remember exactly where it was. Now imagine replacing that with a camera-equipped robot that does the rounds automatically, recognises problems on its own, and drops a precise pin on a map. That robot is what DIMS orchestrates — except the “robot” is a drone that lives on a rooftop and flies.</p>
+        </div>
+
+        <p>Drones can obviously fly up and film these structures. But a <em>raw</em> drone only gives you <strong>video</strong>. You still need a trained pilot on site, a person watching the feed to spot problems, and a way to convert “I see a crack in this video” into “the crack is at <em>this</em> GPS location.” <span class="term" data-term="dims">DIMS</span> automates that <strong>entire loop</strong>.</p>
+
+        <h2>What DIMS actually does (end to end)</h2>
+        <p>Here is the full journey, which we’ll spend the rest of the handbook unpacking. Don’t worry about the unfamiliar words — every one is explained later and most have a definition if you hover the <span class="term" data-term="raycast">dotted terms</span>.</p>
+
+        <figure>
+          <img src="../assets/img/diagrams/dims-architecture.svg" alt="DIMS end-to-end architecture diagram">
+          <figcaption>The DIMS pipeline at a glance — from the dock in the field, through our cloud, to the operator’s browser.</figcaption>
+        </figure>
+
+        <ol>
+          <li><strong>A drone lives in a dock on site.</strong> The <span class="term" data-term="dock3">DJI Dock 3</span> is a weatherproof box that houses, charges, and launches a <span class="term" data-term="m4td">Matrice 4TD</span> drone — with <em>no human on site</em>.</li>
+          <li><strong>DIMS plans a mission.</strong> An operator (or a schedule) defines a flight route — a <span class="term" data-term="wayline">wayline</span> of waypoints, altitudes, and camera actions.</li>
+          <li><strong>The drone flies it autonomously</strong> and streams <span class="term" data-term="telemetry">telemetry</span> (its position, battery, speed…) and live <span class="term" data-term="livestream">video</span> back to the <span class="term" data-term="cloudapi">DIMS cloud</span>.</li>
+          <li><strong>AI watches the video in real time.</strong> Our <span class="term" data-term="yolo">YOLO</span> models run on a <span class="term" data-term="gpu">GPU</span> and detect things like fire, smoke, or structural defects, drawing a <span class="term" data-term="bbox">box</span> around each.</li>
+          <li><strong>DIMS turns a detection into real coordinates.</strong> Using <span class="term" data-term="raycast">raycasting</span> onto a 3D terrain model, a fire seen as pixels in the video becomes an actual latitude/longitude pin — an <strong>alert</strong>.</li>
+          <li><strong>The operator sees everything live</strong> in a 3D <span class="term" data-term="twin">digital twin</span> in their browser: the drone moving over real terrain, its camera feed with AI boxes, and the coordinatized alerts.</li>
+        </ol>
+
+        <div class="callout key">
+          <div class="ct">🔑 The one idea to remember</div>
+          <p>A normal drone gives you <em>footage</em>. DIMS gives you <em>answers with coordinates</em> — automatically, repeatably, with no one in the field. That jump (“pixels → a pin on the map”) is the heart of the product.</p>
+        </div>
+
+        <h2>See the hardware it runs on</h2>
+        <p>This is the dock + drone DIMS commands. Watch DJI’s 2-minute intro to get a feel for it — then we’ll go deep on every part in the Hardware section.</p>
+        <div class="video">
+          <iframe src="https://www.youtube-nocookie.com/embed/OwUwgpqgcMA" title="Introducing DJI Dock 3" allowfullscreen loading="lazy"></iframe>
+        </div>
+
+        <h2>Two “modes”: Demo and Real</h2>
+        <p>You’ll hear these constantly, so learn them now. DIMS can run against a <strong>simulated</strong> drone or a <strong>real</strong> one — the same software, two backends.</p>
+
+        <div class="tabs">
+          <div class="tab-btns">
+            <button class="tab-btn">🎮 Demo mode (simulator)</button>
+            <button class="tab-btn">🛰️ Real mode (hardware)</button>
+          </div>
+          <div class="tab-panel">
+            <p>A full <span class="term" data-term="sitl">software simulator</span> pretends to be a dock and drone. It reports fake-but-realistic telemetry and renders synthetic video. This lets us build, test, and <em>demo</em> the entire system — including AI detection and alerts — with <strong>no hardware and zero risk</strong>. Most development happens here.</p>
+            <div class="callout note"><div class="ct">Why it matters</div><p>You can do almost all of your work in demo mode. It’s safe, free, and always available.</p></div>
+          </div>
+          <div class="tab-panel">
+            <p>The same DIMS cloud talks to a <strong>real</strong> <span class="term" data-term="dock3">Dock 3</span> + <span class="term" data-term="m4td">Matrice 4TD</span> over DJI’s <span class="term" data-term="cloudapi">Cloud API</span>. As of June 2026 the real hardware is connected to DIMS (telemetry + control proven; first field deployment coming at Bomunsan).</p>
+            <div class="callout danger"><div class="ct">⚠ Safety</div><p>Real hardware can hurt people and itself. There are strict rules — e.g. the real drone must never auto-deploy on a timer. Never point demo behaviour at the real command path.</p></div>
+          </div>
+        </div>
+
+        <h2>What it looks like</h2>
+        <p>This is the live <strong>console</strong> — the operator’s screen. A geo-accurate 3D terrain twin, the drone flying on it, a cockpit-style <span class="term" data-term="pfd">flight display</span>, the live camera feed, and AI detections — all in one browser window.</p>
+        <figure>
+          <img src="../assets/img/screenshots/console-hero.jpeg" alt="The DIMS console showing the 3D terrain twin and HUD">
+          <figcaption>The DIMS console (demo mode). We’ll dissect every panel in <a href="14-dims-frontend.html">chapter 14</a>.</figcaption>
+        </figure>
+        <figure>
+          <img src="../assets/img/screenshots/2026-06-22-hybrid-fire-fpv.png" alt="AI fire detection on the drone camera feed with a coordinatized alert">
+          <figcaption>The flagship demo: the drone flies to a fire, its camera feed fills the view, AI boxes the plume, and DIMS pins one real-world coordinate for it.</figcaption>
+        </figure>
+
+        <h2>How DIMS is built (the two codebases)</h2>
+        <p>CNS keeps two separate repositories. Knowing which is which will save you confusion on day one.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Repo</th><th>What it is</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td><code>dims-platform</code></td><td><strong>The real product.</strong> Our own DJI <span class="term" data-term="cloudapi">Cloud API</span> backend + AI + 3D console. This is where the production build happens.</td><td>Active build</td></tr>
+              <tr><td><code>dims-showcase</code></td><td><strong>The prototype.</strong> The Next.js landing site + mission-control demo, live at <a href="https://dims.ai.kr" target="_blank" rel="noopener">dims.ai.kr</a>.</td><td>Live, stable</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>By the numbers (today)</h3>
+        <div class="specs">
+          <div class="spec"><div class="k">YOLO models shipped</div><div class="v">7</div><div class="u">production ONNX</div></div>
+          <div class="spec"><div class="k">GPU speed-up</div><div class="v">~6.5×</div><div class="u">vs CPU inference</div></div>
+          <div class="spec"><div class="k">Defect F1 target</div><div class="v">≥98.5<span class="u">%</span></div><div class="u">TIPS KPI</div></div>
+          <div class="spec"><div class="k">Funded projects</div><div class="v">6</div><div class="u">across CNS</div></div>
+        </div>
+
+        <details class="deep">
+          <summary>Want the deep version? How DIMS compares to DJI FlightHub 2</summary>
+          <div class="deep-body">
+            <p>DJI sells its own cloud, <span class="term" data-term="flighthub">FlightHub 2</span>, for managing docks and missions. So why build our own? Because FlightHub is a <em>closed, generic</em> product — you can’t add custom AI, custom 3D twins, custom reports, or integrate it with Korean government disaster platforms. DIMS is CNS’s <strong>independent cloud</strong> built on the open <span class="term" data-term="cloudapi">Cloud API</span>, with the explicit goal of <strong>matching and then beating</strong> FlightHub 2 on the features that matter for inspection: real-time AI on the live feed, 2D→3D coordinate mapping, and domain-specific workflows (forest fire, tower crane, facility cleaning). That independence is the entire business case.</p>
+          </div>
+        </details>
+
+        <h2>Where DIMS is headed</h2>
+        <p>DIMS isn’t a lab toy — it has a real first deployment: the <strong>Bomunsan (보문산) forest-fire</strong> early-detection project in Daejeon, the first time DIMS flies a real mission for a real customer. The other five CNS projects (covered in <a href="17-the-projects.html">chapter 17</a>) all feed into or run on this same platform.</p>
+
+        <div class="callout tip">
+          <div class="ct">✅ What you should now be able to say</div>
+          <p>“DIMS is a Drone Inspection Management System: an autonomous dock + drone, a cloud that runs AI on the live video and turns detections into real-world coordinates, and a 3D console to watch it all. It runs in demo (simulated) or real (hardware) mode, is built across two repos, and its first field job is forest-fire detection at Bomunsan.”</p>
+        </div>
+
+        <p>Next, let’s meet the company behind it and the six projects that make up its world.</p>
+
+        <div id="pager"></div>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

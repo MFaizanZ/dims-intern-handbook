@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en" data-loc="page">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>18 · Master Glossary — DIMS Intern Handbook</title>
+  <link rel="stylesheet" href="../assets/css/handbook.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%232dd4bf'/><text x='50' y='72' font-size='62' text-anchor='middle' fill='%23042' font-family='sans-serif' font-weight='bold'>D</text></svg>">
+  <script src="../assets/js/manifest.js"></script>
+  <script src="../assets/js/handbook.js" defer></script>
+  <style>
+    .gloss-search{width:100%;max-width:420px;margin:.4em 0 1.4em;padding:11px 14px;background:var(--bg-2);
+      border:1px solid var(--border);border-radius:10px;color:var(--ink);font-family:var(--font-body);font-size:15px;}
+    .gloss-search:focus{outline:none;border-color:var(--teal);}
+    .gloss-item{padding:14px 0;border-bottom:1px solid var(--border);}
+    .gloss-item dt{font-family:var(--font-display);font-weight:700;color:#fff;font-size:1.08rem;}
+    .gloss-item dd{margin:.3em 0 0;color:var(--ink-soft);font-size:14.5px;}
+    .gloss-letter{font-family:var(--font-display);color:var(--teal);font-size:1.4rem;margin:1.3em 0 .2em;border-bottom:1px solid var(--border);padding-bottom:.15em;}
+    .gloss-empty{color:var(--ink-faint);padding:20px 0;}
+  </style>
+</head>
+<body>
+  <div class="scrim"></div>
+  <div class="layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="content">
+      <header class="topbar" id="topbar"></header>
+      <main class="article" data-page-id="18-glossary">
+
+        <div class="page-head">
+          <div class="kicker">Reference · 18</div>
+          <h1>Master Glossary</h1>
+          <p class="lead">Every jargon term in the handbook, defined in one place. These are the same definitions that pop up when you hover a <span class="term" data-term="dims">dotted term</span> anywhere in the book. Use the box below to filter.</p>
+        </div>
+
+        <input class="gloss-search" id="glossSearch" placeholder="Search terms and definitions…" autocomplete="off">
+        <dl id="glossList"></dl>
+        <p class="gloss-empty" id="glossEmpty" style="display:none">No terms match that search.</p>
+
+        <div id="pager"></div>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var G = window.HANDBOOK.glossary;
+      var items = Object.keys(G).map(function (k) { return G[k]; })
+        .sort(function (a, b) { return a.t.toLowerCase() < b.t.toLowerCase() ? -1 : 1; });
+
+      function letterOf(s) {
+        var c = s.replace(/[^A-Za-z0-9]/g, '').charAt(0).toUpperCase();
+        return /[0-9]/.test(c) ? '#' : (c || '#');
+      }
+
+      function render(q) {
+        var host = document.getElementById('glossList');
+        var empty = document.getElementById('glossEmpty');
+        q = (q || '').toLowerCase().trim();
+        var shown = 0, html = '', lastLetter = '';
+        items.forEach(function (it) {
+          var hay = (it.t + ' ' + it.d).toLowerCase();
+          if (q && hay.indexOf(q) === -1) return;
+          shown++;
+          var L = letterOf(it.t);
+          if (L !== lastLetter) { html += '<div class="gloss-letter">' + L + '</div>'; lastLetter = L; }
+          html += '<div class="gloss-item"><dt>' + it.t + '</dt><dd>' + it.d + '</dd></div>';
+        });
+        host.innerHTML = html;
+        empty.style.display = shown ? 'none' : 'block';
+      }
+
+      render('');
+      document.getElementById('glossSearch').addEventListener('input', function () { render(this.value); });
+    })();
+  </script>
+</body>
+</html>

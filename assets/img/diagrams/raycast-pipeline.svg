@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 360" font-family="'Saira',system-ui,sans-serif">
+  <defs>
+    <marker id="ar2" markerWidth="10" markerHeight="10" refX="7" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#2dd4bf"/>
+    </marker>
+    <style>
+      .lbl{fill:#e7eef5;font-weight:600;font-size:14px;}
+      .sub{fill:#aebccb;font-size:11px;}
+      .step{fill:#2dd4bf;font-size:12px;font-weight:700;font-family:'JetBrains Mono',monospace;}
+      .flow{stroke:#2dd4bf;stroke-width:2;fill:none;marker-end:url(#ar2);}
+    </style>
+  </defs>
+  <rect width="960" height="360" fill="#070b11"/>
+
+  <!-- 1: camera frame with bbox -->
+  <g>
+    <text x="120" y="44" class="step" text-anchor="middle">1 · DETECT</text>
+    <rect x="40" y="58" width="160" height="110" rx="8" fill="#0e1622" stroke="#1b2636"/>
+    <rect x="60" y="78" width="120" height="70" rx="4" fill="#16202e"/>
+    <rect x="92" y="92" width="50" height="44" rx="3" fill="none" stroke="#f5a524" stroke-width="2.5"/>
+    <text x="117" y="86" fill="#f5a524" font-size="10" text-anchor="middle">fire 0.74</text>
+    <text x="120" y="186" class="sub" text-anchor="middle">YOLO boxes the plume</text>
+    <text x="120" y="201" class="sub" text-anchor="middle">in the live video frame</text>
+  </g>
+
+  <!-- 2: ray from drone to ground -->
+  <g>
+    <text x="430" y="44" class="step" text-anchor="middle">2 · RAYCAST</text>
+    <rect x="270" y="58" width="320" height="180" rx="8" fill="#0e1622" stroke="#1b2636"/>
+    <!-- drone -->
+    <circle cx="320" cy="92" r="9" fill="#e7eef5"/>
+    <text x="320" y="80" class="sub" text-anchor="middle">drone</text>
+    <!-- terrain -->
+    <path d="M285,210 C360,180 430,205 500,170 C540,150 565,165 575,160 L575,228 L285,228 Z" fill="#13212b" stroke="#2dd4bf" stroke-opacity="0.4"/>
+    <text x="540" y="222" class="sub" text-anchor="end" font-size="10">DSM terrain</text>
+    <!-- ray -->
+    <line x1="320" y1="92" x2="470" y2="188" stroke="#f5a524" stroke-width="2" stroke-dasharray="5 4"/>
+    <circle cx="470" cy="188" r="6" fill="#f87171"/>
+    <text x="430" y="120" fill="#f5a524" font-size="10">ray through pixel</text>
+    <text x="430" y="135" fill="#f5a524" font-size="10">+ gimbal angle</text>
+  </g>
+
+  <!-- 3: coordinate pin on map -->
+  <g>
+    <text x="800" y="44" class="step" text-anchor="middle">3 · ALERT</text>
+    <rect x="660" y="58" width="260" height="180" rx="8" fill="#0e1622" stroke="#1b2636"/>
+    <rect x="680" y="78" width="220" height="140" rx="5" fill="#16202e"/>
+    <!-- pin -->
+    <path d="M790,150 a16,16 0 1,1 0.1,0 z" fill="#f87171"/>
+    <path d="M790,128 L790,178" stroke="#f87171" stroke-width="3"/>
+    <circle cx="790" cy="143" r="6" fill="#fff"/>
+    <text x="790" y="200" fill="#e7eef5" font-size="11" text-anchor="middle">36.3215°N, 127.3899°E</text>
+    <text x="790" y="215" class="sub" text-anchor="middle">one real-world coordinate</text>
+  </g>
+
+  <path class="flow" d="M205,113 C235,113 245,113 268,113"/>
+  <path class="flow" d="M592,148 C625,148 635,148 658,148"/>
+
+  <text x="480" y="290" class="sub" text-anchor="middle" font-size="13">A pixel in a video becomes a GPS coordinate. This “2D → 3D” step is what turns DIMS from a camera into an inspection system.</text>
+  <text x="480" y="320" fill="#7d8da0" font-size="11" text-anchor="middle">Demo: ~24–74 m from ground truth · algorithm itself ~1.4 m on the DSM</text>
+</svg>

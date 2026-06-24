@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en" data-loc="home">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DIMS Intern Handbook</title>
+  <link rel="stylesheet" href="assets/css/handbook.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%232dd4bf'/><text x='50' y='72' font-size='62' text-anchor='middle' fill='%23042'  font-family='sans-serif' font-weight='bold'>D</text></svg>">
+  <script src="assets/js/manifest.js"></script>
+  <script src="assets/js/handbook.js" defer></script>
+</head>
+<body>
+  <div class="scrim"></div>
+  <div class="layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="content">
+      <header class="topbar" id="topbar"></header>
+      <main class="article" data-page-id="__home__" style="max-width:1040px">
+
+        <section class="hero">
+          <div class="eyebrow">Welcome to the team</div>
+          <h1>The <span class="grad">DIMS</span> Intern Handbook</h1>
+          <p>Everything you need to understand what we build at CNS — the drones, the dock, the AI, the 3D digital twin, and the software that ties it all together. Written from scratch. No prior drone or AI knowledge assumed.</p>
+          <div class="chips" style="justify-content:center;margin-top:22px">
+            <span class="chip teal">Start at 00 →</span>
+            <span class="chip">21 chapters</span>
+            <span class="chip">~3.5 hours total</span>
+            <span class="chip">Hover any dotted term for a definition</span>
+          </div>
+        </section>
+
+        <div class="path">
+          <div class="callout tip" style="max-width:760px;margin:0 auto 10px">
+            <div class="ct">💡 How to read this</div>
+            <p>Go top to bottom the first time — each section builds on the one before. After that, use it as a reference. Every technical term with a <span class="term" data-term="dims">dotted underline</span> shows a definition when you hover it, and they’re all collected in the <a href="pages/18-glossary.html">Glossary</a>. The <b>⎙ PDF</b> button (top-right) prints any page.</p>
+          </div>
+          <div id="homeCards"></div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <script>
+    // Build the learning-path cards from the manifest, grouped by section.
+    (function () {
+      var HB = window.HANDBOOK, host = document.getElementById('homeCards');
+      var groups = [], seen = {};
+      HB.pages.forEach(function (p) { if (!seen[p.group]) { seen[p.group]=[]; groups.push(p.group);} seen[p.group].push(p); });
+      var h = '';
+      groups.forEach(function (g) {
+        h += '<div class="section-label">' + g + '</div><div class="cards">';
+        seen[g].forEach(function (p) {
+          h += '<a class="card" href="pages/' + p.file + '">' +
+                 '<div class="ic">' + p.icon + '</div>' +
+                 '<div class="cn">' + p.num + (p.est !== '—' ? ' · ' + p.est : '') + '</div>' +
+                 '<div class="ct">' + p.title + '</div>' +
+               '</a>';
+        });
+        h += '</div>';
+      });
+      host.innerHTML = h;
+    })();
+  </script>
+</body>
+</html>

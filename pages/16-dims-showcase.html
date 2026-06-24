@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en" data-loc="page">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>16 · DIMS Showcase (Prototype) — DIMS Intern Handbook</title>
+  <link rel="stylesheet" href="../assets/css/handbook.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%232dd4bf'/><text x='50' y='72' font-size='62' text-anchor='middle' fill='%23042' font-family='sans-serif' font-weight='bold'>D</text></svg>">
+  <script src="../assets/js/manifest.js"></script>
+  <script src="../assets/js/handbook.js" defer></script>
+</head>
+<body>
+  <div class="scrim"></div>
+  <div class="layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="content">
+      <header class="topbar" id="topbar"></header>
+      <main class="article" data-page-id="16-dims-showcase">
+
+        <div class="page-head">
+          <div class="kicker">THE SOFTWARE · 16</div>
+          <h1>DIMS Showcase (the Prototype)</h1>
+          <p class="lead">There are <strong>two</strong> DIMS codebases, and on day one people mix them up constantly. Chapters 12–15 were about the <em>product</em>. This short chapter is about the <em>prototype</em> — the public website at dims.ai.kr — so you always know which repo you're looking at.</p>
+        </div>
+
+        <h2>Two repos, one easy way to remember them</h2>
+        <p>CNS keeps the <span class="term" data-term="dims">DIMS</span> code in two completely separate <span class="term" data-term="frontend">git</span> repositories. They are <strong>not</strong> the same project, they are <strong>not</strong> in the same folder, and a change in one does not affect the other.</p>
+
+        <div class="analogy">
+          <div class="ct">🧩 Analogy</div>
+          <p>Think of a car company. <strong>dims-showcase</strong> is the glossy <em>concept car</em> on the auto-show floor — beautiful, drivable enough to impress visitors, built fast to show "this is where we're going." <strong>dims-platform</strong> is the <em>real production car</em> being engineered to actually ship — held to strict safety and quality standards. Both are "the brand," but you'd never confuse the show car with the one rolling off the line.</p>
+        </div>
+
+        <p><strong>dims-showcase</strong> is the public-facing <strong>prototype</strong> — a marketing and investor demo site, live at <a href="https://dims.ai.kr" target="_blank" rel="noopener">dims.ai.kr</a>. It exists to <em>show what DIMS looks like</em> while the real product is still being built. <strong>dims-platform</strong> is the production product you met in chapters 12–15: our own DJI <span class="term" data-term="cloudapi">Cloud API</span> backend, the AI pipeline, and the operator console.</p>
+
+        <div class="callout key">
+          <div class="ct">🔑 The one idea to remember</div>
+          <p><strong>showcase = the demo you <em>show</em> people. platform = the product you <em>build</em>.</strong> When in doubt, look at the folder name: <code>dims-showcase/</code> or <code>dims-platform/</code>. They are sibling repos under <code>DIMS_dev/</code>, which is just a container — not a repo itself.</p>
+        </div>
+
+        <h2>Prototype vs. Product — side by side</h2>
+        <p>This is the distinction worth memorising. Flip between the two tabs:</p>
+
+        <div class="tabs">
+          <div class="tab-btns">
+            <button class="tab-btn">🎨 Prototype · dims-showcase</button>
+            <button class="tab-btn">🏗️ Product · dims-platform</button>
+          </div>
+          <div class="tab-panel">
+            <ul>
+              <li><strong>Purpose:</strong> show what DIMS looks like — a polished marketing &amp; investor demo.</li>
+              <li><strong>Audience:</strong> the public, potential customers, partners, the outside world.</li>
+              <li><strong>Repo:</strong> <code>dims-showcase/</code> — live at dims.ai.kr.</li>
+              <li><strong>Data:</strong> everything is <em>mocked</em> — no real drone, no real backend.</li>
+              <li><strong>Strictness:</strong> "move fast" — type/lint checks are relaxed at build time (see below).</li>
+            </ul>
+          </div>
+          <div class="tab-panel">
+            <ul>
+              <li><strong>Purpose:</strong> the real, working drone-inspection system that flies actual missions.</li>
+              <li><strong>Audience:</strong> operators, and ultimately real customers like the Bomunsan deployment.</li>
+              <li><strong>Repo:</strong> <code>dims-platform/</code> — the production build (chapters 12–15).</li>
+              <li><strong>Data:</strong> real telemetry, real AI, real <span class="term" data-term="dock3">Dock 3</span> + <span class="term" data-term="m4td">Matrice 4TD</span> (or the simulator).</li>
+              <li><strong>Strictness:</strong> strict "no-slop" standards, quality gates, recorded history.</li>
+            </ul>
+          </div>
+        </div>
+
+        <h2>What's inside the showcase</h2>
+        <p>The prototype is a single <span class="term" data-term="nextjs">Next.js</span> app with several "surfaces" (screens) bundled together:</p>
+        <ul>
+          <li><strong>Landing page</strong> — the bilingual (English/Korean) marketing front page you see at dims.ai.kr, with smooth scrolling and animated stats.</li>
+          <li><strong>Mission-control dashboard</strong> — a demo of an operator screen: a project map, a site inspector, and fleet management views.</li>
+          <li><strong>Studio</strong> — a standalone 3D-model previewer for loading and inspecting drone/building models on their own.</li>
+          <li><strong>3D drone simulation</strong> — the most complex part: a drone model that flies a generated path (rectangular sweep or spiral) over a building, rendered in real-time 3D.</li>
+          <li><strong>Debug Tuner</strong> — a hidden developer panel (an invisible button in the bottom-left corner) for live-tweaking the drone's flight path and model positions, then saving them to a config file.</li>
+        </ul>
+
+        <figure>
+          <img src="../assets/img/screenshots/showcase-prototype.png" alt="The dims-showcase prototype: a 3D building-inspection drone simulation">
+          <figcaption>The <strong>dims-showcase</strong> prototype — its 3D drone-simulation surface: a building model with a simulated inspection flight path, live “telemetry”, flight-plan toggles (Inspection / Coating·Cleaning), and a deficiency feed (structural / corrosion). <span class="src">Source: dims-showcase (dims.ai.kr).</span></figcaption>
+        </figure>
+
+        <h2>The tech stack, in plain words</h2>
+        <p>The showcase is built with <span class="term" data-term="nextjs">Next.js 14</span> and <span class="term" data-term="react">React 18</span> (the same web foundation explained in chapter 14). On top of that sit a handful of specialist libraries. Here's what each one actually <em>does</em>:</p>
+
+        <div class="table-wrap"><table>
+          <thead><tr><th>Library</th><th>What it does, in beginner terms</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Three.js</strong></td><td>The engine that draws 3D graphics in a web browser. It turns "a drone model at this position, lit this way" into pixels on screen. Anything 3D in the prototype runs on it.</td></tr>
+            <tr><td><strong>React Three Fiber</strong></td><td>A bridge that lets you write Three.js 3D scenes using <span class="term" data-term="react">React</span>'s component style. Instead of low-level graphics calls, you write tags like <code>&lt;mesh&gt;</code> — much friendlier.</td></tr>
+            <tr><td><strong>MapLibre</strong></td><td>A free, open-source map renderer (think "Google Maps you host yourself"). It draws the interactive 2D maps — pan, zoom, satellite tiles — without paying for a map service.</td></tr>
+            <tr><td><strong>Zustand</strong></td><td>A tiny "state manager" — one shared notebook the whole app reads from and writes to (which mission is selected, where the drone is, is playback running). It avoids passing data manually through dozens of components.</td></tr>
+            <tr><td><strong>shadcn/ui</strong></td><td>A ready-made set of polished UI building blocks (buttons, dialogs, dropdowns) you copy into the project and restyle. It's why the prototype looks consistent without designing every button from scratch.</td></tr>
+            <tr><td><strong>Tailwind CSS</strong></td><td>A styling system where you describe appearance with small class names (<code>p-4</code> = padding, <code>text-white</code> = white text) right on the element, instead of writing separate CSS files. Fast to build with, easy to keep consistent.</td></tr>
+          </tbody>
+        </table></div>
+
+        <div class="callout note">
+          <div class="ct">Heads-up: the product is similar but not identical</div>
+          <p>The production <code>dims-platform</code> console (chapter 14) also uses Next.js, React and 3D — but for its 3D terrain twin it uses <span class="term" data-term="cesium">Cesium</span> (geo-accurate, real-world coordinates) rather than the prototype's more illustrative Three.js scene. Same family of tools, different goals: the showcase shows the <em>idea</em>; the platform renders the <em>real world</em>.</p>
+        </div>
+
+        <h2>A build-config quirk you'll hit</h2>
+        <p>If you open the showcase's <code>next.config.mjs</code>, you'll notice some settings that look "wrong" if you're used to strict projects. They're intentional <strong>prototype shortcuts</strong>:</p>
+
+        <div class="table-wrap"><table>
+          <thead><tr><th>Setting</th><th>What it means</th></tr></thead>
+          <tbody>
+            <tr><td><code>swcMinify: false</code></td><td>Code-shrinking ("minification") is turned off, to work around a bug in some 3D/AI bundles. Trades a bigger download for "it just works."</td></tr>
+            <tr><td><code>typescript.ignoreBuildErrors: true</code></td><td>TypeScript type errors will <em>not</em> stop a build. The site still ships even if some types are wrong.</td></tr>
+            <tr><td><code>eslint.ignoreDuringBuilds: true</code></td><td>Code-quality (lint) warnings are ignored at build time too.</td></tr>
+          </tbody>
+        </table></div>
+
+        <div class="callout warn">
+          <div class="ct">⚠ This is a prototype convenience — NOT how the product is run</div>
+          <p>These relaxations exist so the demo site can be updated <em>fast</em> without small errors blocking a deploy. The production <code>dims-platform</code> repo is the opposite: it enforces strict "no-slop" quality standards, real checks, and recorded history. <strong>Never assume the product is run this loosely just because the prototype is.</strong> If you start work in the platform repo, expect the gates to actually fail you — that's by design.</p>
+        </div>
+
+        <h2>How the two repos relate over time</h2>
+        <p>Right now the two evolve <strong>independently</strong>: the showcase keeps the public site looking sharp, while the platform builds the real engine underneath. The plan is that once the product's own web UI — the operator console from <a href="14-dims-frontend.html">chapter 14</a> — is mature enough, <strong>dims.ai.kr can "cut over"</strong> to the real product. Until that day, treat them as two separate worlds that happen to share a name.</p>
+
+        <div class="callout tip">
+          <div class="ct">💡 Practical rule for interns</div>
+          <p>Before you touch anything, check which repo you're in. Marketing/landing/demo polish → <code>dims-showcase</code>. Real drone, real AI, real Cloud API → <code>dims-platform</code>. Each has its own <code>CLAUDE.md</code> that is the source of truth for <em>that</em> repo — read it first.</p>
+        </div>
+
+        <div class="callout tip">
+          <div class="ct">✅ What you should now be able to say</div>
+          <p>"There are two DIMS repos. <strong>dims-showcase</strong> is the public prototype — a Next.js 14 / React 18 marketing and investor demo live at dims.ai.kr, with a landing page, a mock dashboard, a studio, a 3D drone simulation, and a Debug Tuner. It's built with Three.js and React Three Fiber for 3D, MapLibre for maps, Zustand for state, and shadcn/ui + Tailwind for the look, and it deliberately relaxes minification and type/lint checks for speed — a prototype trade-off. <strong>dims-platform</strong> is the real product, held to strict standards. Don't confuse them; check the folder name first."</p>
+        </div>
+
+        <div id="pager"></div>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

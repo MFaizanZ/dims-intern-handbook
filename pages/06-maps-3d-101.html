@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en" data-loc="page">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>06 · Maps, 3D & Digital Twins 101 — DIMS Intern Handbook</title>
+  <link rel="stylesheet" href="../assets/css/handbook.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%232dd4bf'/><text x='50' y='72' font-size='62' text-anchor='middle' fill='%23042' font-family='sans-serif' font-weight='bold'>D</text></svg>">
+  <script src="../assets/js/manifest.js"></script>
+  <script src="../assets/js/handbook.js" defer></script>
+</head>
+<body>
+  <div class="scrim"></div>
+  <div class="layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="content">
+      <header class="topbar" id="topbar"></header>
+      <main class="article" data-page-id="06-maps-3d-101">
+
+        <div class="page-head">
+          <div class="kicker">FOUNDATIONS · 06</div>
+          <h1>Maps, 3D &amp; Digital Twins 101</h1>
+          <p class="lead">To understand DIMS you first need a handful of ideas about <em>where things are</em> and <em>what shape the world is</em>. We’ll build them from absolute zero — no maps or 3D background needed — and arrive at the single trick that turns a drone’s camera into a measuring instrument.</p>
+        </div>
+
+        <h2>1. How we say “where”</h2>
+        <p>Every spot on Earth can be named with two numbers: <strong>latitude</strong> (how far north or south) and <strong>longitude</strong> (how far east or west). Latitude runs 0° at the equator to ±90° at the poles; longitude runs 0° at Greenwich to ±180°. Together they pinpoint any location — the DIMS dock at Bomunsan, a fire on a hillside, your office desk.</p>
+
+        <div class="analogy">
+          <div class="ct">🧩 Analogy</div>
+          <p>Latitude and longitude are like the row and seat number on a concert ticket. Two numbers, and out of the whole stadium there is exactly one chair they point to. Earth just has a <em>very</em> large seating chart.</p>
+        </div>
+
+        <p>But a number only means something if everyone agrees where “zero” is and how round the Earth is. That shared agreement is called a <strong>datum</strong>, and the one your phone’s GPS uses is <span class="term" data-term="wgs84">WGS84</span> — the World Geodetic System of 1984. It’s the global standard coordinate system. When DIMS says a fire is at <code>36.2956, 127.4011</code>, those are WGS84 lat/long, the same language Google Maps and every GPS device speak. Because everyone uses WGS84, a coordinate from DIMS can be handed straight to a fire truck’s navigation without translation.</p>
+
+        <h2>2. Altitude is trickier than it sounds</h2>
+        <p>Height seems simple until you ask “height above <em>what?</em>” There are two very different answers, and confusing them is how drones crash into hills.</p>
+        <ul>
+          <li><strong>MSL — height above mean sea level.</strong> A fixed global reference. A mountain peak is “500 m MSL” no matter what’s under your feet right now.</li>
+          <li><strong>AGL — height above ground level.</strong> How high you are above the dirt <em>directly below you this instant</em>. <span class="term" data-term="agl">AGL</span> changes as the ground rises and falls beneath the drone.</li>
+        </ul>
+
+        <div class="analogy">
+          <div class="ct">🧩 Analogy</div>
+          <p>Imagine flying a kite while walking up a hill. Your hand stays a steady 1.5 m above the path (constant AGL), but its height above sea level keeps rising as the hill climbs. Now reverse it: hold the kite at a fixed sea-level height and walk toward a hill — the ground rushes up to meet it. That’s exactly how a drone clips terrain when it only watches MSL.</p>
+        </div>
+
+        <p>For a flying robot, <strong>AGL is the safety number</strong>. A wayline that says “fly at 120 m” must mean 120 m above the terrain the whole way, or the drone will fly straight into a ridge as the ground rises. This need to keep safe <strong>terrain clearance</strong> is why DIMS has to know the exact shape of the ground — which is the next idea.</p>
+
+        <h2>3. Describing the shape of the ground</h2>
+        <p>How do you give a computer the shape of a hill? You hand it an <strong>elevation model</strong>: a grid laid over the area where each cell stores a height. Two flavours matter:</p>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Model</th><th>Stores the height of…</th><th>Includes buildings/trees?</th></tr></thead>
+          <tbody>
+            <tr><td><strong>DEM</strong> (Digital <em>Elevation</em> Model)</td><td>the bare earth</td><td>No — ground only</td></tr>
+            <tr><td><strong>DSM</strong> (Digital <em>Surface</em> Model)</td><td>the top surface</td><td>Yes — rooftops, tree canopy, everything</td></tr>
+          </tbody>
+        </table></div>
+
+        <div class="analogy">
+          <div class="ct">🧩 Analogy</div>
+          <p>A DEM is the bald ground if you shaved off every tree and building. A DSM is a bedsheet draped over the city — it follows roofs and treetops. For dodging obstacles you want the bedsheet, because that’s what the drone would actually hit.</p>
+        </div>
+
+        <p>DIMS uses a <span class="term" data-term="dsm">DSM</span> — a grid of surface heights for the area — both to plan terrain-safe flights and, as we’ll see, to figure out exactly <em>where</em> something the camera sees is sitting on the ground.</p>
+
+        <h2>4. Capturing reality in 3D</h2>
+        <p>An elevation grid is one number per cell. But sometimes you want the <em>full</em> 3D shape of a real object — a tower crane, a building face, a forest. The raw form of that is a <strong>point cloud</strong>: millions of individual 3D dots, each with its own X/Y/Z, that together trace out the surface like a dense 3D constellation.</p>
+        <p>There are two common ways to capture a <span class="term" data-term="pointcloud">point cloud</span>:</p>
+        <ul>
+          <li><strong><span class="term" data-term="lidar">LiDAR</span></strong> — a sensor fires laser pulses and times the bounce-back. Distance × direction = a 3D point. Do that millions of times a second and you scan a precise 3D shape, even through gaps in foliage.</li>
+          <li><strong><span class="term" data-term="photogrammetry">Photogrammetry</span></strong> — take many overlapping photos of a thing from different angles; software finds matching features across them and triangulates each point’s 3D position. No laser — just lots of pictures and clever maths.</li>
+        </ul>
+
+        <div class="analogy">
+          <div class="ct">🧩 Analogy</div>
+          <p>LiDAR is like tapping a dark room with a cane to feel exactly how far each surface is. Photogrammetry is like how your two eyes judge depth — except with hundreds of “eyes” (photos) from all around the subject, the computer reconstructs the 3D scene from how things shift between views.</p>
+        </div>
+
+        <p>DJI’s desktop software <span class="term" data-term="terra">DJI Terra</span> does photogrammetry: feed it the drone’s overlapping photos and it reconstructs the 3D point cloud and surface (we cover this in <a href="11-dji-terra.html">chapter 11</a>). A close cousin of its output is the <span class="term" data-term="orthomosaic">orthomosaic</span> — all those photos stitched and geometrically corrected into one seamless top-down image where every pixel sits at its true map position. Think of it as a custom, ultra-high-resolution “satellite photo” of just your site, flown today.</p>
+
+        <h2>5. The digital twin</h2>
+        <p>Now combine everything: take the real terrain shape (DSM), drape imagery over it, and render it in a browser as a 3D world you can fly a virtual drone around. That live, geo-accurate 3D virtual copy of a real place is a <strong>digital twin</strong>.</p>
+
+        <p>In the DIMS console you don’t watch a drone on a flat 2D map — you watch it flying <em>inside</em> a 3D <span class="term" data-term="twin">twin</span> of the actual hillside, at its real coordinates and real altitude, over terrain with the real bumps and valleys. The browser engine that renders these accurate 3D globes and terrain is <span class="term" data-term="cesium">CesiumJS</span> (detailed in <a href="14-dims-frontend.html">chapter 14</a>). “Geo-accurate” is the key word: a point in the twin corresponds to a real WGS84 coordinate, which is what makes the next trick possible.</p>
+
+        <figure>
+          <img src="../assets/img/screenshots/b2-01-2dmap-profile-console.jpeg" alt="DIMS console showing a 2D map with a ground-elevation profile strip">
+          <figcaption>The same flight on a 2D map plus a ground-elevation <strong>profile</strong> strip — the wiggly line is the terrain height under the route, exactly the data a DSM provides for keeping safe AGL clearance.</figcaption>
+        </figure>
+
+        <h2>6. The killer trick: raycasting</h2>
+        <p>Here’s the problem that separates a camera from an <em>inspection system</em>. The AI spots a fire in the video and draws a box around some pixels. Great — but “a fire somewhere in this frame” is useless to a fire crew. They need a <strong>coordinate</strong>. How do you get from a pixel to a latitude/longitude?</p>
+
+        <p>The answer is <span class="term" data-term="raycast">raycasting</span>. We know exactly where the drone’s camera is (GPS position + altitude) and exactly which way it’s pointing (its gimbal angles). So we shoot an imaginary straight line — a <strong>ray</strong> — out from the camera, through the detected object’s pixel, and let it travel until it <strong>hits the 3D terrain</strong> (the DSM). The point where the ray strikes the ground is a real location. Read off its WGS84 lat/long, and the fire that was “some orange pixels” is now “a fire at <code>36.2956, 127.4011</code>.”</p>
+
+        <div class="callout key">
+          <div class="ct">🔑 The one idea to remember</div>
+          <p><strong>Raycasting converts “a fire in the video” into “a fire at this lat/long.”</strong> A virtual ray leaves the camera, passes through the detected pixel, and intersects the 3D terrain model — and that intersection is a real-world coordinate. This single step is what makes DIMS an <em>inspection system</em> instead of just a fancy live-streaming camera.</p>
+        </div>
+
+        <figure>
+          <img src="../assets/img/diagrams/raycast-pipeline.svg" alt="Diagram: AI detection, then a ray from the camera through the pixel hitting terrain, producing a coordinatized alert">
+          <figcaption>The signature pipeline: <strong>detect</strong> (AI boxes the object) → <strong>raycast</strong> (ray from camera through pixel onto the DSM) → <strong>alert</strong> (a real coordinate on the map).</figcaption>
+        </figure>
+
+        <figure>
+          <img src="../assets/img/screenshots/2026-06-22-raycast-footprint.png" alt="Raycast footprint quad projected onto real 3D terrain in the DIMS console">
+          <figcaption>The raycast in action — the camera’s view is projected down as a <strong>footprint</strong> onto the real terrain, and where the detected plume lands becomes a pinned coordinate.</figcaption>
+        </figure>
+
+        <h2>7. A quick, honest note on accuracy</h2>
+        <p>Raycasting is only as exact as the 3D surface the ray lands on. In the demo, the terrain we <em>draw</em> on screen (a global render terrain) and the DSM we <em>raycast against</em> can sit at slightly different heights — a small <strong>datum gap</strong>. That mismatch is why demo coordinates can land a few tens of metres off the true spot, even though the raycasting algorithm itself, run on a matching DSM, is roughly <strong>metre-accurate</strong>. In real-mode flights this gap goes away because both sides use the same model. Short version: the method is sharp; the demo’s two terrains just don’t perfectly agree yet.</p>
+
+        <div class="callout note">
+          <div class="ct">Why this honesty matters</div>
+          <p>When you see a demo alert that looks off by 30 m, it’s not the AI being wrong — it’s the render-vs-DSM datum gap. Knowing the difference saves you from “fixing” a problem that isn’t there.</p>
+        </div>
+
+        <div class="callout tip">
+          <div class="ct">✅ What you should now be able to say</div>
+          <p>“A location on Earth is a latitude/longitude in the WGS84 system. Altitude can be measured from sea level (MSL) or from the ground right below you (AGL) — and AGL is what keeps a drone from hitting terrain, which is why DIMS carries a DSM, a grid of surface heights. You can capture reality in 3D as a point cloud via LiDAR or photogrammetry (DJI Terra), and stitch photos into an orthomosaic. DIMS renders a geo-accurate 3D <em>digital twin</em> of the site in the browser with CesiumJS. Its signature trick is <em>raycasting</em>: shoot a ray from the camera through a detected pixel onto the terrain to turn a fire-in-the-video into a fire-at-a-coordinate — which is what makes DIMS an inspection system, not just a camera.”</p>
+        </div>
+
+        <p>Next we’ll meet the hardware all of this rides on — the dock and drone that put the camera in the sky.</p>
+
+        <div id="pager"></div>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

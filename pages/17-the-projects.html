@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en" data-loc="page">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>17 · The 6 Projects, Explained — DIMS Intern Handbook</title>
+  <link rel="stylesheet" href="../assets/css/handbook.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%232dd4bf'/><text x='50' y='72' font-size='62' text-anchor='middle' fill='%23042' font-family='sans-serif' font-weight='bold'>D</text></svg>">
+  <script src="../assets/js/manifest.js"></script>
+  <script src="../assets/js/handbook.js" defer></script>
+</head>
+<body>
+  <div class="scrim"></div>
+  <div class="layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="content">
+      <header class="topbar" id="topbar"></header>
+      <main class="article" data-page-id="17-the-projects">
+
+        <div class="page-head">
+          <div class="kicker">The Projects · 17</div>
+          <h1>The 6 Projects, Explained</h1>
+          <p class="lead"><span class="term" data-term="cns">CNS</span> runs six funded projects at once. They are not six separate companies’ worth of work — they are six pieces of <strong>one</strong> story: building <span class="term" data-term="dims">DIMS</span> and proving it in the field. This chapter explains each one and, more importantly, how they fit together.</p>
+        </div>
+
+        <h2>The shape of it</h2>
+        <p>Think of the six projects in three layers:</p>
+        <ul>
+          <li><strong>The platform core</strong> — three projects that build the DIMS software, its AI quality bar, and its training data: <em>Deep Tech</em>, <em>TIPS</em>, <em>Data Voucher</em>.</li>
+          <li><strong>The sensor layer</strong> — one hardware project building new payloads that feed imagery into DIMS: <em>SWIR</em>.</li>
+          <li><strong>The field applications</strong> — two projects that put DIMS to work on a real customer problem: <em>Tower Crane</em> and <em>Forest Fire</em>.</li>
+        </ul>
+        <div class="callout key">
+          <div class="ct">🔑 One sentence</div>
+          <p>Deep Tech + TIPS + Data Voucher <strong>build</strong> the DIMS platform; SWIR <strong>feeds</strong> it new sensors; Tower Crane and Forest Fire <strong>run</strong> real missions on it.</p>
+        </div>
+
+        <hr>
+
+        <h2>Layer 1 — The platform core</h2>
+
+        <h3>🧠 Deep Tech <span style="font-weight:400;color:var(--ink-faint);font-size:.85rem">— DIMS v2.0 (platform R&amp;D)</span></h3>
+        <p>The big platform-research project. It builds <strong>DIMS Software v2.0</strong> and the <strong>AI recognition model v2.0</strong> — the next generation of everything in chapters 12–15. Its scope includes the 3D <span class="term" data-term="twin">digital-twin</span> pipeline, an autonomous-flight optimization algorithm, and a <strong>five-task work-operation module</strong> covering the jobs a drone can do at a site:</p>
+        <div class="chips">
+          <span class="chip teal">cleaning</span><span class="chip teal">coating</span><span class="chip teal">painting</span><span class="chip teal">inspection</span><span class="chip teal">measurement</span>
+        </div>
+        <p>In short: Deep Tech is where the platform itself is pushed forward.</p>
+
+        <h3>📊 TIPS <span style="font-weight:400;color:var(--ink-faint);font-size:.85rem">— DIMS Core AI (the KPIs)</span></h3>
+        <p>If Deep Tech builds the AI, TIPS defines <strong>how good it has to be</strong> and proves it. It sets and validates the core-AI performance targets (<span class="term" data-term="f1">KPIs</span>) the platform must hit:</p>
+        <div class="table-wrap"><table>
+          <thead><tr><th>KPI</th><th>Target</th></tr></thead>
+          <tbody>
+            <tr><td>Defect-detection accuracy (<span class="term" data-term="f1">F1 score</span>)</td><td>≥ 98.5%</td></tr>
+            <tr><td>3D digital-twin auto-generation time</td><td>≤ 20 minutes</td></tr>
+            <tr><td>Defect 3D-mapping accuracy</td><td>≥ 95%</td></tr>
+            <tr><td>3D web-visualization load time</td><td>≤ 5 seconds</td></tr>
+          </tbody>
+        </table></div>
+        <p>These numbers are why the AI chapter (15) keeps mentioning accuracy and speed — they’re contractual goals, not vanity metrics.</p>
+
+        <h3>🗂️ Data Voucher <span style="font-weight:400;color:var(--ink-faint);font-size:.85rem">— the dataset</span></h3>
+        <p>Every model in chapter 15 needs <span class="term" data-term="dataset">training data</span>. This project builds the standardized <strong>Drone Facility-Inspection &amp; Cleaning Dataset</strong> — on the order of 15 GB and 5,000+ records — that feeds the DIMS AI. It’s organised into parts such as:</p>
+        <ul>
+          <li><strong>Infra_Object_Dataset</strong> — labelled infrastructure/object imagery.</li>
+          <li><strong>YOLOv8n_TRT_Model</strong> — a packaged <span class="term" data-term="yolo">YOLO</span> / <span class="term" data-term="tensorrt">TensorRT</span> model artifact.</li>
+          <li><strong>VLM_Inference_Result</strong> — vision-language-model inference outputs.</li>
+          <li><strong>Flight_Simulator_Set</strong> &amp; <strong>Flight_Log_Dataset</strong> — simulated flights and real flight logs.</li>
+        </ul>
+
+        <hr>
+
+        <h2>Layer 2 — The sensor layer</h2>
+        <h3>🛰️ SWIR <span style="font-weight:400;color:var(--ink-faint);font-size:.85rem">— multi-sensor payload (hardware R&amp;D)</span></h3>
+        <p>A multi-year <strong>hardware</strong> project building a drone-mounted integrated sensor payload that combines <span class="term" data-term="multispectral">Multispectral</span> + <span class="term" data-term="swir">SWIR</span> + <span class="term" data-term="lwir">LWIR</span> imaging — plus the quadcopter to carry it. As you learned in chapter 10, SWIR sees things RGB and thermal can’t (moisture, materials), so this payload gives DIMS richer imagery to analyse. It’s the one project that produces new <em>hardware</em> rather than software.</p>
+
+        <hr>
+
+        <h2>Layer 3 — The field applications</h2>
+
+        <h3>🏗️ Hyundai E&amp;C — Tower Crane Inspection <span style="font-weight:400;color:var(--ink-faint);font-size:.85rem">— field application</span></h3>
+        <p>Drone-based <strong>autonomous tower-crane inspection</strong>: a drone + AI + 3D twin + a DIMS-linked auto-generated report, applied to inspecting tower cranes. CNS is building the R&amp;D for this on the DIMS platform.</p>
+        <div class="callout note">
+          <div class="ct">📄 About the Hyundai inspection PDFs</div>
+          <p>You’ll see Hyundai E&amp;C inspection documents in the project folder. These are <strong>outsourced reference data</strong> — they’re studied to work out <em>which inspection items a drone should perform</em>, not a deliverable themselves. The core task is organising the drone-inspectable checklist.</p>
+        </div>
+
+        <h3>🔥 Public Demand Forest Fire — Bomunsan <span style="font-weight:400;color:var(--ink-faint);font-size:.85rem">— the first real deployment</span></h3>
+        <p>A government-funded demonstration of drone-based <strong>forest-fire early detection</strong> + drone <span class="term" data-term="swarm">swarm</span> control for <strong>Bomunsan (보문산)</strong>, fully integrated into DIMS. This is the <strong>first real DIMS field deployment</strong> — the moment everything in this handbook stops being a demo. Its pieces:</p>
+        <ul>
+          <li>AI on RGB + <span class="term" data-term="thermal">thermal</span> imagery (a YOLO Smoke/Fire model);</li>
+          <li>an unmanned charging station (the <span class="term" data-term="dock3">dock</span> concept) for 24/7 watch;</li>
+          <li>alerting into the city’s disaster-safety platform via API (the ≤8 s <span class="term" data-term="raycast">coordinatized alert</span> from chapter 15).</li>
+        </ul>
+        <div class="specs">
+          <div class="spec"><div class="k">Site</div><div class="v" style="font-size:1.05rem">Jung-gu, Daejeon</div><div class="u">Bomunsan 보문산</div></div>
+          <div class="spec"><div class="k">Period</div><div class="v" style="font-size:1.05rem">Apr–Oct 2026</div><div class="u">2026-04-01 → 10-31</div></div>
+          <div class="spec"><div class="k">Significance</div><div class="v" style="font-size:1.05rem">First field deploy</div><div class="u">real DIMS mission</div></div>
+        </div>
+
+        <hr>
+
+        <h2>How it all connects</h2>
+        <p>Read the chapters you’ve already covered through this lens: the <a href="08-matrice-4td.html">M4TD</a> and <a href="10-sensors.html">sensors</a> capture imagery; <a href="15-ai-in-dims.html">the AI</a> (built by <em>Deep Tech</em>, measured by <em>TIPS</em>, trained on <em>Data Voucher</em>) finds and locates problems; <em>SWIR</em> will add new ways to see; and <em>Tower Crane</em> and <em>Forest Fire</em> are the real jobs that prove the whole thing works.</p>
+
+        <div class="callout tip">
+          <div class="ct">✅ What you should now be able to say</div>
+          <p>“CNS’s six projects build one platform. Deep Tech, TIPS and Data Voucher are the DIMS core — software, AI KPIs, and dataset. SWIR is a new multi-band sensor payload. Tower Crane and Forest Fire are field applications, and the Bomunsan forest-fire project is DIMS’s first real deployment.”</p>
+        </div>
+
+        <div id="pager"></div>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

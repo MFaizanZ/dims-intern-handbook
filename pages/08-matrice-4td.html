@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en" data-loc="page">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>08 · Matrice 4TD (M4TD) — DIMS Intern Handbook</title>
+  <link rel="stylesheet" href="../assets/css/handbook.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%232dd4bf'/><text x='50' y='72' font-size='62' text-anchor='middle' fill='%23042' font-family='sans-serif' font-weight='bold'>D</text></svg>">
+  <script src="../assets/js/manifest.js"></script>
+  <script src="../assets/js/handbook.js" defer></script>
+</head>
+<body>
+  <div class="scrim"></div>
+  <div class="layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="content">
+      <header class="topbar" id="topbar"></header>
+      <main class="article" data-page-id="08-matrice-4td">
+
+        <div class="page-head">
+          <div class="kicker">THE HARDWARE · 08</div>
+          <h1>Matrice 4TD (M4TD)</h1>
+          <p class="lead">If <a href="07-dock-3.html">Dock 3</a> is the rooftop garage, the Matrice 4TD is the car that lives in it. It’s the actual drone DIMS flies — the thing with the cameras, the thermal sensor, and the laser. This chapter is all about that aircraft.</p>
+        </div>
+
+        <h2>What it is, in one breath</h2>
+        <p>The <span class="term" data-term="m4td">Matrice 4TD</span> is DJI’s dock-paired enterprise inspection drone — part of the Matrice 4D aircraft family. The name decodes cleanly once you know the pattern:</p>
+        <div class="chips">
+          <span class="chip teal">Matrice 4 · the airframe</span>
+          <span class="chip">T · Thermal payload</span>
+          <span class="chip">D · Dock version</span>
+        </div>
+        <p>So <strong>M4TD = the thermal-camera, dock-living member of the Matrice 4 series.</strong> It is built to sleep inside <span class="term" data-term="dock3">Dock 3</span>, launch on a schedule, fly an inspection route entirely on its own, and land itself back on the charging pad — with no pilot standing in a field. It carries a multi-camera <span class="term" data-term="gimbal">gimbal</span> (wide + zoom + thermal) and a laser rangefinder, and it is the aircraft every flight you see in the DIMS console actually corresponds to.</p>
+
+        <figure>
+          <img src="../assets/img/dji/matrice4-product.png" alt="DJI Matrice 4 series aircraft, top view">
+          <figcaption>The Matrice 4 series airframe. The M4TD is the thermal (“T”) + dock (“D”) variant of this aircraft. <span class="src">Source: DJI</span></figcaption>
+        </figure>
+
+        <div class="analogy">
+          <div class="ct">🧩 Analogy</div>
+          <p>Think of a smartphone with three rear lenses — an ultra-wide, a normal, and a long zoom — <em>plus</em> a thermal camera and a laser tape-measure, all bolted onto a flying robot that can hover dead still in wind and steer those lenses at any target. That’s the M4TD’s job: be a very smart camera that flies itself.</p>
+        </div>
+
+        <div class="callout note">
+          <div class="ct">A note on the numbers below</div>
+          <p>DJI publishes detailed specs for the <strong>Matrice 4 series</strong>. The M4TD is the thermal/dock variant, so the figures here are the 4-series numbers (specifically the 4T-class camera package). Treat them as the right ballpark for our aircraft, and always defer to DJI’s official site for an exact M4TD datasheet.</p>
+        </div>
+
+        <h2>The flight specs that matter</h2>
+        <div class="specs">
+          <div class="spec"><div class="k">Takeoff weight</div><div class="v">~1219<span class="u">g</span></div><div class="u">aircraft</div></div>
+          <div class="spec"><div class="k">Max flight time</div><div class="v">~49<span class="u">min</span></div><div class="u">per charge</div></div>
+          <div class="spec"><div class="k">Max horizontal speed</div><div class="v">21<span class="u">m/s</span></div><div class="u">≈ 76 km/h</div></div>
+          <div class="spec"><div class="k">Wind resistance</div><div class="v">12<span class="u">m/s</span></div><div class="u">sustained</div></div>
+        </div>
+        <p>Two of these matter a lot for inspection work. <strong>~49 minutes</strong> of endurance is enough to fly a real route, study a structure, and come home with margin — and because the drone recharges in the dock, DIMS can run mission after mission unattended. <strong>12 m/s wind resistance</strong> (about 43 km/h) means it can still do its job on a breezy day at Bomunsan, not only in perfect calm.</p>
+
+        <h3>How it knows exactly where it is</h3>
+        <p>Two systems keep the M4TD safe and precise:</p>
+        <ul>
+          <li><strong>Omnidirectional obstacle sensing</strong> — binocular (stereo) vision looking in all directions, so the drone can <em>see</em> branches, wires, and walls and avoid them. Essential when it’s flying close to a tower crane or through a forest with nobody steering.</li>
+          <li><strong><span class="term" data-term="rtk">RTK</span> positioning</strong> — a satellite-positioning upgrade that pins the drone’s location to roughly <strong>1 cm + 1 ppm</strong> horizontally, versus the metres of error a normal phone GPS gives you. Centimetre accuracy is what makes a repeatable, automated inspection possible: fly the <em>exact</em> same path every week and compare.</li>
+        </ul>
+
+        <h2>The cameras — one gimbal, four ways to look</h2>
+        <p>The whole point of the M4TD is its <span class="term" data-term="payload">payload</span>: the sensor package on the gimbal. It bundles three visible-light cameras at different zoom levels plus an infrared (thermal) camera, so one aircraft can do many inspection jobs.</p>
+
+        <div class="table-wrap"><table>
+          <thead><tr><th>Camera</th><th>Sensor</th><th>Field of view</th><th>Best for</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Wide</strong></td><td>1/1.3" CMOS, 48 MP, f/1.7</td><td>24 mm equiv.</td><td>Situational overview — see the whole scene</td></tr>
+            <tr><td><strong>Medium-tele</strong></td><td>1/1.3" CMOS, 48 MP</td><td>70 mm equiv.</td><td>A closer look without flying nearer</td></tr>
+            <tr><td><strong>Tele (zoom)</strong></td><td>1/1.5" CMOS, 48 MP</td><td>168 mm equiv.</td><td>Reading a crack or bolt from a safe distance</td></tr>
+            <tr><td><strong>Thermal (IR)</strong></td><td>640×512, 12 µm, ±2 °C</td><td>infrared</td><td>Heat — fire, overheating equipment, hotspots</td></tr>
+          </tbody>
+        </table></div>
+
+        <p>Why so many lenses? Because <strong>different inspections need different eyes</strong>:</p>
+        <ul>
+          <li><strong>Wide</strong> gives the operator context — where is the drone, what’s around it.</li>
+          <li><strong>Tele zoom</strong> lets the drone read fine detail (a hairline crack, a loose bolt) from far away, so it never has to fly dangerously close.</li>
+          <li><strong><span class="term" data-term="thermal">Thermal</span></strong> sees <em>heat</em> instead of light. A smouldering fire, an overheating motor, or warm machinery glows brightly even in darkness or smoke. For the forest-fire project this is gold: smoke might hide a fire from the colour camera, but the heat still shows up in the thermal image.</li>
+        </ul>
+
+        <div class="callout tip">
+          <div class="ct">💡 RGB + thermal together</div>
+          <p>DIMS doesn’t pick one camera — it runs AI on the visible feed <em>and</em> can use thermal to confirm. A colour camera might spot smoke; the thermal camera confirms there’s real heat behind it. Two independent signals = far fewer false alarms.</p>
+        </div>
+
+        <h2>The gimbal — how the camera aims</h2>
+        <p>All those lenses sit on a <strong>3-axis stabilised <span class="term" data-term="gimbal">gimbal</span></strong>. “3-axis stabilised” means motors actively cancel the drone’s shaking and tilting on all three rotation axes, so the footage stays glass-smooth even as the aircraft bobs in the wind. Crucially, the gimbal is also <strong>steerable</strong>: DIMS can command its <strong>yaw</strong> (turn left/right) and <strong>pitch</strong> (tilt up/down) to point the cameras anywhere — independently of where the drone’s nose is facing.</p>
+
+        <p>That gimbal aim is exactly what you see in this real DIMS screenshot: the drone has detected a target and is auto-slewing the gimbal to lock onto it.</p>
+        <figure>
+          <img src="../assets/img/screenshots/2026-06-22-fpv-acquire-slew.png" alt="The M4TD gimbal auto-aiming to acquire a target in the DIMS console">
+          <figcaption>The drone’s gimbal auto-aiming (“acquire &amp; slew”) onto a target inside the DIMS console — the <span class="term" data-term="fpv">FPV</span> camera view recentres as the gimbal pitch/yaw lock on.</figcaption>
+        </figure>
+
+        <h2>The laser rangefinder — the secret weapon</h2>
+        <p>The M4TD carries a <strong>laser rangefinder</strong>: a laser that measures the exact distance to whatever the camera is pointed at — range up to <strong>1800 m</strong>, accuracy <strong>±0.2 m</strong>. This sounds minor but it’s one of the most important sensors for DIMS.</p>
+
+        <div class="specs">
+          <div class="spec"><div class="k">Laser range</div><div class="v">1800<span class="u">m</span></div><div class="u">max distance</div></div>
+          <div class="spec"><div class="k">Laser accuracy</div><div class="v">±0.2<span class="u">m</span></div><div class="u">distance error</div></div>
+        </div>
+
+        <p>Here’s why it matters. To turn “I see a fire in the video” into “the fire is at <em>this</em> latitude/longitude,” DIMS needs to know <strong>how far away</strong> the thing is. Normally we estimate that by <span class="term" data-term="raycast">raycasting</span> — shooting an imaginary line from the camera onto a 3D terrain model and seeing where it hits (covered in <a href="06-the-big-loop.html">chapter 06</a> and <a href="15-ai-in-dims.html">chapter 15</a>). The laser gives us that distance <strong>directly and precisely</strong>: aim the camera at the target, fire the laser, read the exact range. Combine the drone’s position, its gimbal angles, and that laser distance, and you get a <strong>direct geolocation</strong> of the fire or defect — no terrain-model guesswork needed.</p>
+
+        <div class="callout key">
+          <div class="ct">🔑 The one idea to remember</div>
+          <p>Camera angle + laser distance + drone position = a real-world coordinate. The laser rangefinder turns the M4TD from “a drone that films things” into “a drone that can tell you precisely <em>where</em> the thing is.” That’s the bridge from pixels to a pin on the map.</p>
+        </div>
+
+        <h2>Getting the picture home: the radio link</h2>
+        <p>None of this is useful if the operator can’t see it live. The M4TD uses <strong>DJI O4 Enterprise</strong> transmission to stream control commands and video between the aircraft and the dock/ground.</p>
+        <div class="specs">
+          <div class="spec"><div class="k">Video/control range</div><div class="v">~25<span class="u">km</span></div><div class="u">FCC · ~12 km CE</div></div>
+          <div class="spec"><div class="k">Latency</div><div class="v">~130<span class="u">ms</span></div><div class="u">video lag</div></div>
+        </div>
+        <p>~130 ms latency means the live feed is close to real-time — when you nudge the gimbal in the console, the picture responds almost instantly. (Range figures differ by region because of radio regulations: <strong>FCC</strong> is the US standard, <strong>CE</strong> the European one.)</p>
+
+        <h2>How it works with the dock — the daily cycle</h2>
+        <p>The M4TD and Dock 3 are designed as one system. A typical autonomous cycle looks like this:</p>
+        <ol>
+          <li>The dock opens; the M4TD takes off from its charging pad.</li>
+          <li>It flies the planned <span class="term" data-term="telemetry">route</span>, steering the gimbal and running cameras at each point of interest.</li>
+          <li>It streams live video and telemetry back the whole time.</li>
+          <li>When the job’s done (or the battery runs low), it <strong>returns to the dock</strong>, lands on the pad, and <strong>recharges</strong> — ready for the next mission, no human required.</li>
+        </ol>
+        <p>For everything the dock does — weatherproofing, charging, the connection to our cloud — see <a href="07-dock-3.html">chapter 07</a>.</p>
+
+        <h2>What DIMS reads from the drone</h2>
+        <p>While the M4TD flies, DIMS continuously receives two streams from it. Both flow through DJI’s Cloud API and into the console you’ll work with daily.</p>
+        <div class="img-2">
+          <div>
+            <h4>📊 Telemetry (<span class="term" data-term="osd">OSD</span>)</h4>
+            <p>A constant trickle of numbers: GPS position, altitude, battery %, speed, heading, and the live <strong>gimbal yaw/pitch angles</strong>. DIMS uses these to draw the drone on the 3D twin and to do the raycast math.</p>
+          </div>
+          <div>
+            <h4>🎥 Live video</h4>
+            <p>The camera feed itself, restreamed so the operator (and the AI) can watch in the browser. This is what the <span class="term" data-term="yolo">YOLO</span> models analyse frame-by-frame to find fire, smoke, and defects.</p>
+          </div>
+        </div>
+        <p>Those gimbal angles in the telemetry aren’t just for show — they’re an input to the geolocation math. Knowing exactly which way the camera was pointing (yaw + pitch) is half of turning a detection into a coordinate. See <a href="10-sensors.html">chapter 10</a> for a deeper dive on the sensors, and <a href="06-the-big-loop.html">chapter 06</a> for how telemetry feeds the detection loop.</p>
+
+        <details class="deep">
+          <summary>Want the deep version? Why a dock-specific “D” model at all?</summary>
+          <div class="deep-body">
+            <p>A normal enterprise drone is built around a human pilot with a controller. A dock variant flips that: there’s no controller and no pilot on site, so the aircraft must be able to be <em>fully</em> commanded over the network, self-test before flight, land itself precisely back on a small pad, and tolerate sitting in a box through heat, cold, and rain. The “D” version bundles the firmware and hardware tweaks (precise pad landing, dock handshake, remote health checks) that make autonomous, pilotless operation reliable. That’s why DIMS can run it as a true “fly-by-itself” system rather than a remote-controlled toy.</p>
+          </div>
+        </details>
+
+        <div class="callout tip">
+          <div class="ct">✅ What you should now be able to say</div>
+          <p>“The Matrice 4TD is the dock-paired enterprise drone DIMS flies — ‘T’ for thermal, ‘D’ for dock. It flies ~49 minutes, resists 12 m/s wind, and positions itself to ~1 cm with RTK. Its steerable 3-axis gimbal carries wide, zoom, and thermal cameras plus a 1800 m laser rangefinder — and that laser is key, because camera angle + laser distance + drone position gives a fire or defect a real coordinate. It launches from and recharges in Dock 3, and DIMS reads its telemetry and live video to drive the console and run AI.”</p>
+        </div>
+
+        <p>Next we’ll look at the other aircraft in CNS’s world and how they compare.</p>
+
+        <div id="pager"></div>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

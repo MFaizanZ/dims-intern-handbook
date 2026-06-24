@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en" data-loc="page">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>10 · Sensors &amp; Payloads — DIMS Intern Handbook</title>
+  <link rel="stylesheet" href="../assets/css/handbook.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%232dd4bf'/><text x='50' y='72' font-size='62' text-anchor='middle' fill='%23042' font-family='sans-serif' font-weight='bold'>D</text></svg>">
+  <script src="../assets/js/manifest.js"></script>
+  <script src="../assets/js/handbook.js" defer></script>
+</head>
+<body>
+  <div class="scrim"></div>
+  <div class="layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="content">
+      <header class="topbar" id="topbar"></header>
+      <main class="article" data-page-id="10-sensors">
+
+        <div class="page-head">
+          <div class="kicker">THE HARDWARE · 10</div>
+          <h1>Sensors &amp; Payloads</h1>
+          <p class="lead">A drone is only as smart as the camera bolted under it. This chapter walks through every kind of sensor a DIMS-relevant drone can carry — in plain language — and matches each one to the inspection jobs it does best.</p>
+        </div>
+
+        <h2>First: what is a “payload”?</h2>
+        <p>The <span class="term" data-term="payload">payload</span> is the equipment a drone carries to do its actual job — almost always a <strong>camera or sensor package</strong>. It hangs underneath the aircraft on a <span class="term" data-term="gimbal">gimbal</span>: a motorised mount that keeps the camera steady and lets it point in any direction, no matter how the drone tilts or shakes. Think of the gimbal as a self-balancing wrist and the payload as the eye it holds.</p>
+
+        <figure>
+          <img src="../assets/img/dji/matrice4-product.png" alt="DJI Matrice 4 series aircraft showing the gimbal-mounted camera payload underneath">
+          <figcaption>The Matrice 4 series. The cluster of lenses on the gimbal under the nose <em>is</em> the payload — that is what actually inspects things. <span class="src">Source: DJI</span></figcaption>
+        </figure>
+
+        <p>Different jobs need different sensors. A crack inspection needs a sharp zoom camera; a fire patrol needs to see heat; a 3D model needs to measure shape. Below are the seven payload types that matter for DIMS, each with <em>what it is</em>, <em>how it works</em>, and <em>what it’s good for</em>.</p>
+
+        <h2>1. RGB / visible cameras</h2>
+        <p><strong>What it is.</strong> A normal colour camera — “RGB” just means red-green-blue, the light your own eyes see. This is the bread-and-butter sensor on every drone.</p>
+        <p><strong>How it works.</strong> Light hits a sensor chip and becomes a high-resolution photo. The number that matters is <strong>megapixels</strong> (millions of dots) — more megapixels means you can zoom into the picture and still see fine detail. Inspection drones usually carry several RGB lenses at once:</p>
+        <ul>
+          <li><strong>Wide</strong> — sees the whole scene, good for situational awareness and 3D mapping.</li>
+          <li><strong>Tele / zoom</strong> — magnifies a far-away target. This is the inspector’s favourite: a zoom lens lets the drone spot a <strong>hairline crack from tens of metres away</strong>, so it never has to fly dangerously close to a structure.</li>
+        </ul>
+        <p>One technical word you’ll meet: <strong>mechanical vs electronic (rolling) shutter</strong> — a mechanical shutter captures the whole frame in one instant (no smear on fast-moving or mapping shots), while a rolling shutter reads the image line-by-line and can slightly skew fast motion.</p>
+
+        <div class="analogy">
+          <div class="ct">🧩 Analogy</div>
+          <p>Zoom is the drone’s pair of binoculars. Instead of walking up to a tower crane bolt — risky and slow — it stands back at a safe distance and reads the bolt through high-power glass.</p>
+        </div>
+
+        <div class="callout note"><div class="ct">Why zoom matters for DIMS</div><p>For the <a href="17-the-projects.html">tower-crane inspection project</a>, a strong zoom RGB lens is the primary tool — it’s what lets the drone read tiny defects on steel from a safe standoff distance.</p></div>
+
+        <h2>2. Thermal / infrared (LWIR)</h2>
+        <p><strong>What it is.</strong> A camera that sees <em>heat</em> instead of light. The proper name is <span class="term" data-term="lwir">LWIR</span> (long-wave infrared) — a <span class="term" data-term="thermal">thermal</span> camera.</p>
+        <p><strong>How it works.</strong> Everything warmer than its surroundings <em>emits</em> infrared energy. A thermal sensor reads that emitted heat directly, so it works in <strong>total darkness, through smoke, and at night</strong> — it doesn’t need any visible light at all. A <strong>radiometric</strong> thermal camera goes further and reads an actual <em>temperature</em> for every pixel, not just “hot vs cold”.</p>
+
+        <div class="analogy">
+          <div class="ct">🧩 Analogy</div>
+          <p>Thermal is a pair of heat-vision goggles. A person hiding in the dark, an overheating fuse box, or a smouldering hotspot before it bursts into flame — all glow brightly even when an ordinary camera sees nothing.</p>
+        </div>
+
+        <p><strong>What it’s good for.</strong> Fire and smoke detection (the Bomunsan forest-fire job leans on this), spotting <strong>overheating electrical gear</strong> before it fails, finding <strong>water ingress</strong> (wet patches read cooler), and measuring <strong>building heat loss</strong>.</p>
+
+        <h2>3. Laser rangefinder</h2>
+        <p><strong>What it is.</strong> A small laser that measures the exact <strong>distance</strong> from the drone to whatever it’s pointed at.</p>
+        <p><strong>How it works.</strong> It fires a laser pulse, times how long the reflection takes to come back, and converts that to a precise distance. The <span class="term" data-term="m4td">Matrice 4TD</span> carries one with a range up to roughly <strong>1,800 m</strong>.</p>
+        <p><strong>Why it’s a big deal for DIMS.</strong> Distance alone is useful, but combine it with three things the drone already knows — its own GPS position, its altitude, and the exact angle its gimbal is pointing — and you can compute the <strong>real-world coordinate of the target directly</strong>. That is geolocation by laser: point at a fire, get its latitude/longitude.</p>
+
+        <div class="callout key"><div class="ct">🔑 Connect it back</div><p>This is the hardware cousin of <span class="term" data-term="raycast">raycasting</span> — the software trick DIMS uses to turn a pixel in the video into a map pin (see <a href="06-coordinates-raycasting.html">chapter 06</a> and <a href="15-ai-in-dims.html">chapter 15</a>). The laser gives a <em>direct</em> measured distance; raycasting estimates it from a 3D terrain model. Either way the goal is the same: <strong>pixels → a pin on the map</strong>.</p></div>
+
+        <h2>4. LiDAR</h2>
+        <p><strong>What it is.</strong> Like a rangefinder, but firing <strong>hundreds of thousands of laser pulses per second</strong> in a sweeping pattern to build a dense 3D map of a whole structure. DJI’s versions are the <span class="term" data-term="zenmuse">Zenmuse</span> L-series.</p>
+        <p><strong>How it works.</strong> Each pulse measures one distance; millions of them together form a <strong>point cloud</strong> — a 3D constellation of dots that traces the exact shape of everything the drone flew over.</p>
+        <p><strong>What it’s good for.</strong> Building accurate <strong>3D models</strong>, measuring <strong>volume and structure</strong> (e.g. a stockpile or a building), and — usefully — <strong>seeing through vegetation</strong>: some pulses slip between leaves and hit the ground, so LiDAR can map terrain hidden under a forest canopy.</p>
+
+        <h2>5. Multispectral</h2>
+        <p><strong>What it is.</strong> A camera that captures several <em>specific, narrow bands</em> of light at once — including bands just outside what your eye can see.</p>
+        <p><strong>How it works.</strong> Instead of blending everything into one colour image, a <span class="term" data-term="multispectral">multispectral</span> sensor records each chosen band separately. Healthy plants, stressed plants, soil, and different building materials each reflect these bands differently, so comparing the bands reveals things a normal photo hides.</p>
+        <p><strong>What it’s good for.</strong> <strong>Vegetation health</strong> (a classic in agriculture — spotting stressed crops before they look sick to the eye), and distinguishing <strong>materials</strong> by how they reflect.</p>
+
+        <h2>6. SWIR (short-wave infrared)</h2>
+        <p><strong>What it is.</strong> A sensor that sees a band <em>beyond</em> visible light but <em>before</em> thermal — short-wave infrared, or <span class="term" data-term="swir">SWIR</span>.</p>
+        <p><strong>How it works.</strong> SWIR reflects off surfaces (like visible light) rather than being emitted as heat (like thermal), but at wavelengths that interact strongly with <strong>water and chemical bonds</strong>. That makes it unusually good at revealing <strong>moisture, material composition, and hidden detail</strong> that an RGB camera simply cannot show.</p>
+        <div class="callout tip"><div class="ct">🛰️ This one is ours</div><p>SWIR isn’t just textbook hardware — it’s an <strong>active CNS R&amp;D project</strong>. CNS is developing an integrated payload that fuses <strong>multispectral + SWIR + LWIR</strong> in one unit, plus the drone to carry it. Read the full story in <a href="17-the-projects.html">chapter 17 (the SWIR project)</a>.</p></div>
+
+        <h2>7. How sensors combine — “sensor fusion”</h2>
+        <p>No single sensor wins at everything. The real power comes from carrying several and <strong>fusing</strong> what they each see into one complete picture — this is called <strong>sensor fusion</strong>.</p>
+
+        <div class="tabs">
+          <div class="tab-btns">
+            <button class="tab-btn">📷 RGB view</button>
+            <button class="tab-btn">🔥 Thermal view</button>
+            <button class="tab-btn">🟢 LiDAR view</button>
+          </div>
+          <div class="tab-panel">
+            <p><strong>RGB answers “what does it look like?”</strong> Sharp colour detail — readable text, rust, hairline cracks, the exact shape of a defect. It’s the sensor a human inspector trusts most. But it’s blind in darkness and smoke, and a flat photo carries no distance.</p>
+          </div>
+          <div class="tab-panel">
+            <p><strong>Thermal answers “what’s hot?”</strong> It sees through smoke and night, and flags heat the eye can’t — a fire starting, a fuse overheating, damp seeping into a wall. But it’s low-resolution and can’t read fine text or colour.</p>
+          </div>
+          <div class="tab-panel">
+            <p><strong>LiDAR (and the laser) answer “what shape, how far?”</strong> They turn a scene into measured 3D geometry and exact distances — the backbone of a digital <span class="term" data-term="twin">twin</span> and of geolocating a target. But a point cloud alone has no colour and no temperature.</p>
+          </div>
+        </div>
+
+        <p>Put together: <strong>RGB for detail, thermal for heat, LiDAR for shape, the laser for range</strong>. Fused, they describe a scene more completely than any one could — exactly what DIMS needs to detect a problem, identify it, and pin its location. The AI side of this (running <span class="term" data-term="cv">computer vision</span> on the camera feed) is covered in <a href="15-ai-in-dims.html">chapter 15</a>.</p>
+
+        <figure>
+          <img src="../assets/img/screenshots/2026-06-23-finetuned-detection.png" alt="DIMS AI drawing fire and smoke detection boxes on the drone camera feed">
+          <figcaption>What the camera + AI produce together: a live RGB feed with <span class="term" data-term="dims">DIMS</span>’ AI boxing fire and smoke in real time — the first step before raycasting it to a coordinate.</figcaption>
+        </figure>
+
+        <h2>Payload → DIMS use-case</h2>
+        <p>The quick reference: which sensor each DIMS job leans on.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>DIMS use-case</th><th>Primary payload(s)</th><th>Why</th></tr></thead>
+            <tbody>
+              <tr><td>Forest fire (Bomunsan)</td><td>Thermal (LWIR) + RGB</td><td>Thermal spots hotspots through smoke/at night; RGB confirms and shows context.</td></tr>
+              <tr><td>Tower-crane inspection</td><td>Zoom RGB</td><td>Reads tiny defects on steel from a safe standoff distance.</td></tr>
+              <tr><td>3D digital twin</td><td>LiDAR / photogrammetry</td><td>Builds accurate point clouds and measurable 3D geometry.</td></tr>
+              <tr><td>Material &amp; moisture analysis</td><td>SWIR + multispectral</td><td>Reveals composition, water ingress, and vegetation health invisible to RGB.</td></tr>
+              <tr><td>Direct target geolocation</td><td>Laser rangefinder</td><td>Measures exact distance → real-world coordinate of the target.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <details class="deep">
+          <summary>Want the deep version? Why “fusion” is harder than just bolting on cameras</summary>
+          <div class="deep-body">
+            <p>To fuse two sensors you have to know <strong>exactly</strong> where each one was pointing at the exact same instant — their viewpoints must be aligned (“registered”) so a hot pixel in the thermal frame lines up with the right crack in the RGB frame and the right point in the LiDAR cloud. That requires precise, time-synchronised gimbal angles and positions. It’s the same maths that powers geolocation: get the angles and position right, and every sensor’s view snaps onto the same 3D world. Get them wrong by a degree and your fire pin lands on the wrong hillside.</p>
+          </div>
+        </details>
+
+        <div class="callout tip">
+          <div class="ct">✅ What you should now be able to say</div>
+          <p>“A drone’s payload is the sensor it carries on a gimbal. RGB sees colour detail (zoom lets it read cracks from a safe distance); thermal/LWIR sees emitted heat through smoke and darkness; a laser rangefinder measures exact distance to geolocate a target; LiDAR fires many lasers to build a 3D point cloud; multispectral and SWIR see light bands beyond the eye to reveal vegetation health, materials, and moisture — SWIR being an active CNS payload project. Fused together, they let DIMS detect a problem, identify it, and pin where it is.”</p>
+        </div>
+
+        <div id="pager"></div>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en" data-loc="page">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>11 · DJI's Software Stack — DIMS Intern Handbook</title>
+  <link rel="stylesheet" href="../assets/css/handbook.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%232dd4bf'/><text x='50' y='72' font-size='62' text-anchor='middle' fill='%23042' font-family='sans-serif' font-weight='bold'>D</text></svg>">
+  <script src="../assets/js/manifest.js"></script>
+  <script src="../assets/js/handbook.js" defer></script>
+</head>
+<body>
+  <div class="scrim"></div>
+  <div class="layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="content">
+      <header class="topbar" id="topbar"></header>
+      <main class="article" data-page-id="11-dji-software">
+
+        <div class="page-head">
+          <div class="kicker">THE SOFTWARE · 11</div>
+          <h1>DJI's Software Stack</h1>
+          <p class="lead">The drone and dock are hardware — but hardware does nothing without software to fly it, configure it, and stream its data somewhere. <span class="term" data-term="dji">DJI</span> ships a whole family of apps and clouds for this. The most important fact in this chapter: <strong>DIMS uses some of them and deliberately replaces others.</strong> Knowing which is which explains why CNS builds its own platform at all.</p>
+        </div>
+
+        <h2>Why this chapter matters</h2>
+        <p>When you buy a DJI enterprise drone, you don't just get a flying machine — you get DJI's <strong>ecosystem</strong>: an app to fly it, an app to set it up, a cloud to manage a whole fleet, an open interface for connecting your own software, and a desktop tool to turn its photos into maps. <span class="term" data-term="dims">DIMS</span> sits on top of this ecosystem. To understand DIMS, you have to know what each DJI tool does — and then see exactly where DIMS plugs in, and where it walks away and does its own thing.</p>
+
+        <div class="analogy">
+          <div class="ct">🧩 Analogy</div>
+          <p>Think of a smartphone. Apple gives you the phone <em>plus</em> its own apps — Mail, Maps, Photos. You can use Apple Mail… or install a better email app that talks to the same phone. DJI is the phone maker. Some of DJI's "apps" we keep; one big one — its cloud — we throw out and build our own, because ours can do things theirs never will.</p>
+        </div>
+
+        <h2>1. DJI Pilot 2 — flying by hand in the field</h2>
+        <p><span class="term" data-term="pilot">DJI Pilot 2</span> is the app that runs on the <strong>handheld remote controller</strong> for DJI's enterprise drones. A pilot standing in a field uses it to take off, fly manually with the sticks, point the camera, and lay out simple flight routes on the spot. It's the cockpit you hold in your hands.</p>
+        <p><strong>Who uses it:</strong> a human pilot physically present at the site.</p>
+        <p><strong>How DIMS relates — DIMS <em>replaces the need</em> for it.</strong> The whole point of a <span class="term" data-term="dock3">Dock 3</span> is that <em>no one is on site</em>. The drone lives in a box on a rooftop and flies on a schedule. There's no pilot holding a controller, so there's no Pilot 2 in the loop during normal dock operations — DIMS commands the drone from the cloud instead. (Pilot 2 may still appear during manual testing, but it is not part of the autonomous flow.)</p>
+
+        <h2>2. DJI Enterprise App — setting up the hardware</h2>
+        <p>The <strong>DJI Enterprise App</strong> is the tool you use to <strong>configure and provision</strong> the hardware before it ever flies on its own. Crucially for our team: the Dock 3 is set up by plugging into it over <strong>USB-C</strong> with this app — <em>not</em> with Pilot 2. That's where you bind the dock to an organization, set its network, and run firmware updates.</p>
+        <p><strong>Who uses it:</strong> whoever installs and commissions the dock (for CNS, that's the field-bring-up step).</p>
+        <p><strong>How DIMS relates — they coexist.</strong> DIMS doesn't replace setup. You still use the Enterprise App once to commission the hardware; after that, DIMS takes over for day-to-day operations. Practical note for the team: when the real Dock 3 was first connected to DIMS, its initial configuration was done through the Enterprise App over USB-C.</p>
+
+        <h2>3. DJI FlightHub 2 — DJI's own cloud (the one we beat)</h2>
+        <p>First, what is a "drone cloud"? When a drone-in-a-box runs unattended, you need a website somewhere on the internet that lets an operator (a) see a map of where the dock is and where the drone is flying, (b) send it missions, (c) watch its live camera feed, and (d) review what it recorded. That central web service is a <strong>drone cloud</strong>. It's the brain that lives off-site and ties everything together.</p>
+        <p><span class="term" data-term="flighthub">DJI FlightHub 2</span> is exactly that — <strong>DJI's own cloud platform</strong> for managing docks, planning and dispatching missions, viewing live feeds, and looking at maps. It's a polished, ready-made product. If you just want to fly a dock and watch the video, FlightHub 2 does the job out of the box.</p>
+        <p><strong>Who uses it:</strong> dock operators who are happy with DJI's standard feature set.</p>
+        <p><strong>How DIMS relates — DIMS <em>replaces</em> it.</strong> FlightHub 2 is the product DIMS competes with and aims to beat. CNS does not use FlightHub 2 as its operations cloud; DIMS <em>is</em> our cloud. The screenshots below are DIMS — not FlightHub — driving a real dock and a live feed.</p>
+
+        <div class="img-2">
+          <figure>
+            <img src="../assets/img/screenshots/2026-06-23-backend-switcher.png" alt="DIMS backend switcher toggling between demo and a real Cloud-API dock">
+            <figcaption>DIMS switching between a simulated backend and a real <span class="term" data-term="cloudapi">Cloud API</span> dock — one console, two backends.</figcaption>
+          </figure>
+          <figure>
+            <img src="../assets/img/screenshots/2026-06-23-dock-live-console.png" alt="DIMS console showing a live dock feed">
+            <figcaption>DIMS (not FlightHub 2) showing a live dock. This is the kind of view a drone cloud provides.</figcaption>
+          </figure>
+        </div>
+
+        <h2>4. DJI Cloud API — the open door DIMS is built on</h2>
+        <p>If DJI's own cloud is closed, how can <em>our</em> cloud talk to <em>their</em> hardware? Through the <span class="term" data-term="cloudapi">DJI Cloud API</span> — an <strong>open interface</strong> DJI publishes so that a third-party cloud (like DIMS) can command a dock and drone and receive its data, <strong>instead of using FlightHub 2</strong>. This is the single most important piece of software in this chapter: it is the foundation the entire DIMS platform stands on.</p>
+        <p>The Cloud API works over two channels:</p>
+        <ul>
+          <li><strong>Messaging</strong> — the dock and our cloud exchange short messages (commands going out, <span class="term" data-term="telemetry">telemetry</span> coming back) over <span class="term" data-term="mqtt">MQTT</span>, a lightweight publish/subscribe protocol built for devices.</li>
+          <li><strong>HTTPS</strong> — bigger requests and file handling go over ordinary secure web requests.</li>
+          <li><strong>Video</strong> — the live camera <span class="term" data-term="livestream">stream</span> is delivered alongside this so DIMS can show it and run AI on it.</li>
+        </ul>
+        <p><strong>Who uses it:</strong> developers building a custom drone cloud — i.e. us.</p>
+        <p><strong>How DIMS relates — this <em>is</em> DIMS's foundation.</strong> Every command DIMS sends to the real Dock 3, and every bit of telemetry and video it receives, travels over the Cloud API.</p>
+
+        <div class="callout warn">
+          <div class="ct">⚠ Protocol reality (forward-ref ch 12–13)</div>
+          <p>Connecting over the Cloud API is not plug-and-play. A secure handshake requires <span class="term" data-term="tls">TLS</span> certificates (the same encryption that puts the padlock in your browser), and the device and cloud clocks must be <strong>synchronized</strong> via <span class="term" data-term="ntp">NTP</span> (network time) or the secure handshake fails. We dig into MQTT, TLS, and the real bring-up gotchas in chapters 12–13.</p>
+        </div>
+
+        <h2>5. DJI Terra — turning photos into 3D models</h2>
+        <p><span class="term" data-term="terra">DJI Terra</span> is <strong>desktop software</strong> (it runs on a PC, not in the field). You feed it a stack of overlapping drone photos and it stitches them, using a technique called <span class="term" data-term="photogrammetry">photogrammetry</span>, into precise 2D maps and 3D models:</p>
+        <ul>
+          <li>an <span class="term" data-term="orthomosaic">orthomosaic</span> — one big, distortion-corrected aerial photo you can measure on, like a custom satellite map;</li>
+          <li>a <span class="term" data-term="pointcloud">point cloud</span> — millions of 3D dots reconstructing the real surface;</li>
+          <li>a textured <strong>3D mesh</strong> — a solid, photo-skinned 3D model of the site.</li>
+        </ul>
+
+        <div class="analogy">
+          <div class="ct">🧩 Analogy</div>
+          <p>Photogrammetry is like your brain using two eyes to judge depth — except here it's hundreds of overlapping photos. From the tiny shifts between them, Terra works out the 3D shape of everything in view and rebuilds it as a model you can spin around.</p>
+        </div>
+
+        <p><strong>Who uses it:</strong> mapping/survey teams processing a flight's imagery after it lands.</p>
+        <p><strong>How DIMS relates — DIMS <em>uses</em> its output.</strong> Terra's 3D mesh and point cloud are the <strong>raw material</strong> for the DIMS 3D digital <span class="term" data-term="twin">twin</span> — the geo-accurate terrain model the operator watches the drone fly over. We cover the twin in <a href="06-3d-twin.html">chapter 06</a> and how DIMS imports and uses these models in <a href="14-dims-frontend.html">chapter 14</a>.</p>
+
+        <h2>Putting it together — who DIMS keeps, who it replaces</h2>
+        <p>Here's the whole stack on one line each. Notice the pattern: DIMS replaces the parts that lock you in (the flying app and the closed cloud) and <em>uses</em> the parts that produce open, reusable data (setup, the open API, and the 3D models).</p>
+
+        <div class="table-wrap"><table>
+          <thead><tr><th>DJI tool</th><th>What it does</th><th>DIMS uses it / replaces it</th></tr></thead>
+          <tbody>
+            <tr><td><strong>DJI Pilot 2</strong></td><td>Hand-flying &amp; field mission-planning on the controller</td><td><strong>Replaces</strong> — no pilot on site in dock operations</td></tr>
+            <tr><td><strong>DJI Enterprise App</strong></td><td>One-time hardware setup/config (Dock 3 over USB-C)</td><td><strong>Uses</strong> — for commissioning, then DIMS takes over</td></tr>
+            <tr><td><strong>DJI FlightHub 2</strong></td><td>DJI's closed cloud for docks, missions, live feeds, maps</td><td><strong>Replaces</strong> — DIMS is our own cloud, built to beat it</td></tr>
+            <tr><td><strong>DJI Cloud API</strong></td><td>Open interface (MQTT + HTTPS) to command the dock &amp; get its data</td><td><strong>Uses</strong> — the foundation DIMS is built on</td></tr>
+            <tr><td><strong>DJI Terra</strong></td><td>Photogrammetry: photos → orthomosaics, point clouds, 3D meshes</td><td><strong>Uses</strong> — its 3D output feeds the DIMS digital twin</td></tr>
+          </tbody>
+        </table></div>
+
+        <div class="callout key">
+          <div class="ct">🔑 The one idea to remember</div>
+          <p>FlightHub 2 is <strong>closed and generic</strong> — you take what DJI gives you. By instead building on the <strong>open Cloud API</strong>, DIMS can add things FlightHub never will: custom <span class="term" data-term="yolo">AI</span> on the live video, custom 3D twins, coordinatized alerts, and domain workflows (forest fire, tower crane, facility cleaning) wired into Korean disaster platforms. That independence — owning the cloud instead of renting DJI's — is the <em>entire</em> reason CNS builds DIMS.</p>
+        </div>
+
+        <details class="deep">
+          <summary>Want the deep version? Why not just extend FlightHub 2?</summary>
+          <div class="deep-body">
+            <p>Because you can't. FlightHub 2 is a finished product with a fixed feature set — there's no place to inject your own neural network onto the live feed, no way to swap in a custom 3D twin, no hook to push alerts into a government API. The Cloud API, by contrast, hands you the raw command-and-telemetry stream and says "build whatever you want." That's more work up front — you have to implement the <span class="term" data-term="mqtt">MQTT</span> messaging, the <span class="term" data-term="tls">TLS</span> handshake, the <span class="term" data-term="ntp">NTP</span> time-sync, and every command yourself — but it's the only path to a platform that does what inspection actually needs. CNS chose to own that platform.</p>
+          </div>
+        </details>
+
+        <div class="callout tip">
+          <div class="ct">✅ What you should now be able to say</div>
+          <p>"DJI ships a software stack: <strong>Pilot 2</strong> to hand-fly from a controller, the <strong>Enterprise App</strong> to set up hardware like the Dock 3 over USB-C, <strong>FlightHub 2</strong> as its own closed drone cloud, the open <strong>Cloud API</strong> (MQTT + HTTPS) to let outside software command a dock, and <strong>Terra</strong> to turn photos into 3D models. DIMS <em>replaces</em> Pilot 2 and FlightHub 2, and <em>builds on</em> the Enterprise App, the Cloud API, and Terra's 3D output. We build on the open Cloud API instead of FlightHub because only that gives us our own AI, our own twin, and our own workflows."</p>
+        </div>
+
+        <p>Next we go under the hood of that connection — how DIMS actually talks to a dock over MQTT and TLS.</p>
+
+        <div id="pager"></div>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

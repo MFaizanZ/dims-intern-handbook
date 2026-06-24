@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en" data-loc="page">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>03 · Drones &amp; Robotics 101 — DIMS Intern Handbook</title>
+  <link rel="stylesheet" href="../assets/css/handbook.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%232dd4bf'/><text x='50' y='72' font-size='62' text-anchor='middle' fill='%23042' font-family='sans-serif' font-weight='bold'>D</text></svg>">
+  <script src="../assets/js/manifest.js"></script>
+  <script src="../assets/js/handbook.js" defer></script>
+</head>
+<body>
+  <div class="scrim"></div>
+  <div class="layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="content">
+      <header class="topbar" id="topbar"></header>
+      <main class="article" data-page-id="03-drones-101">
+
+        <div class="page-head">
+          <div class="kicker">FOUNDATIONS · 03</div>
+          <h1>Drones &amp; Robotics 101</h1>
+          <p class="lead">Before we can talk about <em>autonomous inspection</em>, you need to know what a drone actually is and how it flies. This chapter starts from absolute zero — no prior drone knowledge assumed — and gives you the vocabulary every other chapter relies on.</p>
+        </div>
+
+        <h2>Drone vs. the whole system: UAV and UAS</h2>
+        <p>When people say “drone” they usually mean the flying machine itself. The precise term for that aircraft is a <span class="term" data-term="uav">UAV</span> — an <strong>Unmanned Aerial Vehicle</strong>, i.e. an aircraft with no pilot on board. But the aircraft never works alone. The complete package — the aircraft <em>plus</em> the controller, the ground station, the dock, and the software that commands it — is called a <strong>UAS</strong>, an Unmanned Aerial <em>System</em>.</p>
+
+        <div class="analogy">
+          <div class="ct">🧩 Analogy</div>
+          <p>A “smartphone” is the handset, but the thing that makes it useful is the whole system: the phone, the cell towers, the carrier’s network, and the apps. A UAV is the handset; a UAS is the network behind it. DIMS is the “app + network” layer of a UAS — the drone is just one part it commands.</p>
+        </div>
+
+        <h3>Multirotor vs. fixed-wing</h3>
+        <p>Drones come in two broad families. A <strong>fixed-wing</strong> drone looks like a small aeroplane: it needs forward speed to stay up and can’t stop in mid-air — great for covering huge distances, useless for hovering next to a crack on a bridge. A <strong>multirotor</strong> drone (several spinning propellers) can take off straight up, <strong>hover perfectly still</strong>, and creep sideways centimetre by centimetre.</p>
+        <p>Inspection is all about <em>parking</em> a camera in exactly the right spot and holding it there. That is why every drone CNS uses — the DJI <strong>Matrice</strong> class — is a multirotor.</p>
+
+        <div class="img-2">
+          <figure>
+            <img src="../assets/img/dji/matrice4-product.png" alt="DJI Matrice 4 series inspection drone, top view">
+            <figcaption>The Matrice 4 series — the compact inspection drone DIMS flies today. <span class="src">Source: DJI</span></figcaption>
+          </figure>
+          <figure>
+            <img src="../assets/img/dji/matrice350-product.png" alt="DJI Matrice 350 RTK heavy-lift drone">
+            <figcaption>The older, larger <span class="term" data-term="m300">Matrice 350</span> heavy-lift platform. <span class="src">Source: DJI</span></figcaption>
+          </figure>
+        </div>
+
+        <h2>How a quadcopter actually flies</h2>
+        <p>The most common multirotor is the <strong>quadcopter</strong>: four motors, each spinning one propeller. A spinning propeller pushes air downward, and the air pushes back up — that upward push is <strong>lift</strong>. Spin all four faster and the drone rises; slow them all and it sinks. Match lift exactly to the drone’s weight and it <strong>hovers</strong>.</p>
+        <p>The clever part is steering. The drone never tilts a propeller — it just changes the <em>relative</em> speeds of the four motors:</p>
+        <ul>
+          <li><strong>Up / down (throttle):</strong> all four speed up or slow down together.</li>
+          <li><strong>Pitch (tilt forward/back):</strong> the rear pair spins faster than the front pair, so the drone noses down and slides forward.</li>
+          <li><strong>Roll (tilt left/right):</strong> one side spins faster than the other, sliding the drone sideways.</li>
+          <li><strong>Yaw (spin to face a new direction):</strong> the two diagonal pairs spin in opposite directions; speeding up one pair twists the whole aircraft.</li>
+        </ul>
+
+        <div class="analogy">
+          <div class="ct">🧩 Analogy</div>
+          <p>Think of four people lifting a tabletop, one at each corner. Everyone lifts equally → the table rises flat (hover). The two back people lift harder → the table tips forward and slides that way (pitch). That tiny, constant rebalancing — hundreds of times per second — is exactly what the drone’s “brain” does to fly.</p>
+        </div>
+
+        <h2>The key parts of a drone</h2>
+        <p>You don’t need to be an engineer, but you should recognise the main components when they come up:</p>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Part</th><th>What it does (in plain English)</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Flight controller</strong></td><td>The “brain.” A small computer that runs the balancing maths and converts your commands (“go forward”) into motor speeds.</td></tr>
+            <tr><td><strong>IMU</strong></td><td>The “inner ear.” An accelerometer + gyroscope that senses tilt and motion, telling the brain which way is up and how fast it’s turning.</td></tr>
+            <tr><td><strong><span class="term" data-term="gnss">GNSS</span> receiver</strong></td><td>The satellite-positioning chip (GPS is one example) that tells the drone <em>where</em> it is on Earth.</td></tr>
+            <tr><td><strong>ESCs</strong></td><td>Electronic Speed Controllers — the throttles that translate the brain’s orders into precise motor power.</td></tr>
+            <tr><td><strong>Motors + propellers</strong></td><td>The muscles. They spin the props that make lift.</td></tr>
+            <tr><td><strong>Battery</strong></td><td>The fuel tank. Flight time (often tens of minutes) is set by how much energy it holds.</td></tr>
+            <tr><td><strong>Radio / transmission link</strong></td><td>The wireless connection between the drone and its controller (or dock) carrying commands up and video + <span class="term" data-term="telemetry">telemetry</span> down.</td></tr>
+          </tbody>
+        </table></div>
+
+        <h2>Positioning — and why centimetres matter</h2>
+        <p>Your phone’s GPS is accurate to <strong>several metres</strong>. That’s fine for “turn left at the next street,” but it’s a disaster for inspection: if the drone thinks it’s 3 metres away from where it really is, it can’t reliably photograph the <em>same bolt</em> on the <em>same crane</em> on every flight, and the coordinate it reports for a defect would be off by a car-length.</p>
+        <p>The fix is <span class="term" data-term="rtk">RTK</span> — <strong>Real-Time Kinematic</strong> positioning. A second, fixed receiver (a <strong>base station</strong>) sits at a precisely known spot on the ground and measures the exact same satellite errors the drone is seeing. It broadcasts a correction, and the drone subtracts that error in real time — sharpening its position from several metres down to roughly <strong>one centimetre</strong>.</p>
+
+        <div class="callout key">
+          <div class="ct">🔑 The one idea to remember</div>
+          <p>Plain <span class="term" data-term="gnss">GNSS</span> = “somewhere on this block.” RTK = “this exact point.” That centimetre-level precision is what lets DIMS turn a defect in a video into a <em>trustworthy</em> map coordinate, and lets the drone repeat the identical route every single time.</p>
+        </div>
+
+        <h2>The camera setup: gimbal + payload</h2>
+        <p>A drone that hovers perfectly still is no use if its camera is shaking. So the camera is mounted on a <span class="term" data-term="gimbal">gimbal</span> — a motorised cradle that uses its own little motors and sensors to keep the camera <strong>rock-steady and pointed where you aim it</strong>, even as the drone tilts and bobs in the wind. The gimbal can also <em>steer</em> the camera independently: tilt down at the ground, swing to track a target.</p>
+        <p>What the gimbal carries is called the <span class="term" data-term="payload">payload</span> — the actual sensors. An inspection payload typically bundles a normal <strong>RGB</strong> (colour) camera, a <strong>zoom</strong> camera for distant detail, and a <strong>thermal</strong> camera that sees heat (vital for spotting fire or overheating equipment). We cover every sensor type in <a href="10-sensors.html">chapter 10</a>.</p>
+
+        <h2>Levels of autonomy</h2>
+        <p>“Autonomous” isn’t all-or-nothing — it’s a ladder. Climbing it is the whole story of how DIMS removes the human from the field:</p>
+        <ol>
+          <li><strong>Manual flying.</strong> A pilot stands on site with a controller, watching the drone and steering every move. Maximum control, maximum human effort.</li>
+          <li><strong>Waypoint / wayline missions.</strong> You pre-define a route — a <span class="term" data-term="wayline">wayline</span> of GPS waypoints with altitudes and camera actions — and the drone flies it on its own while a pilot supervises nearby.</li>
+          <li><strong>Fully autonomous dock missions.</strong> The drone lives in a <span class="term" data-term="dock">dock</span> in the field and flies scheduled missions with <strong>no human present at all</strong> — often <span class="term" data-term="bvlos">BVLOS</span> (Beyond Visual Line Of Sight), meaning no one can even see the aircraft. This is the level DIMS targets.</li>
+        </ol>
+
+        <div class="analogy">
+          <div class="ct">🧩 The “drone-in-a-box”</div>
+          <p>The <span class="term" data-term="dock3">DJI Dock 3</span> is a weatherproof box that <strong>charges, shelters, and launches the drone by itself</strong> — think of a robotic garage that opens its roof, sends the car out on its route, then brings it home and recharges it, with nobody around. That self-sufficiency is what makes truly hands-off inspection possible. We dissect the dock in <a href="07-dock-3.html">chapter 07</a>.</p>
+        </div>
+
+        <figure>
+          <img src="../assets/img/dji/dock3-open-drone.png" alt="A drone launching from an open DJI Dock 3">
+          <figcaption>A drone lifting off from an open Dock 3 — the “drone-in-a-box” that makes BVLOS missions possible. <span class="src">Source: DJI</span></figcaption>
+        </figure>
+
+        <h2>Safety basics every operator must know</h2>
+        <p>A drone is a fast-spinning machine in the air, so a handful of safety systems exist on every serious platform. You’ll meet them in depth later; learn the names now:</p>
+        <ul>
+          <li><strong><span class="term" data-term="rth">RTH</span> (Return-To-Home):</strong> a one-button — or automatic — command that flies the drone back to its launch/dock point. It triggers on its own if the battery runs low or the radio link drops.</li>
+          <li><strong><span class="term" data-term="geofence">Geofence</span>:</strong> an invisible 3D fence. You define the area (and height) the drone is allowed in, and the firmware refuses to cross it — keeping it away from airports, people, or no-fly zones.</li>
+          <li><strong>Failsafes:</strong> automatic “if something goes wrong, do the safe thing” rules — lost signal → RTH, critical battery → land now, sensor fault → hold position.</li>
+          <li><strong><span class="term" data-term="agl">AGL</span> vs. sea-level altitude:</strong> “100 m altitude” is ambiguous. <strong>AGL</strong> (Above Ground Level) is height over the terrain right below the drone; sea-level (ASL) is height above the ocean. On a hill like Bomunsan the ground rises and falls, so a route that’s safe in sea-level numbers can still fly the drone <em>into a slope</em>. Terrain clearance always means AGL.</li>
+        </ul>
+
+        <div class="callout warn">
+          <div class="ct">⚠ Why this matters for DIMS</div>
+          <p>Because DIMS can fly missions <em>with no one watching</em>, these safety systems aren’t optional extras — they’re the only thing standing between “a routine inspection” and “a crash.” Several later chapters are devoted entirely to them.</p>
+        </div>
+
+        <h2>See a real inspection drone</h2>
+        <p>Watch DJI’s short intro to an enterprise inspection aircraft to put faces to all these parts — motors, gimbal, payload, RTK and all.</p>
+        <a class="watch-card" href="https://www.youtube.com/watch?v=JPPHG5dSpwM" target="_blank" rel="noopener">
+          <span class="play">▶</span><span><span class="wt">DJI Matrice 350 RTK — intro</span><br><span class="wm">see an enterprise inspection drone · 2 min</span></span>
+        </a>
+
+        <p>And here’s the dock that turns one of these drones into a fully autonomous, hands-off system:</p>
+        <div class="video">
+          <iframe src="https://www.youtube-nocookie.com/embed/OwUwgpqgcMA" title="Introducing DJI Dock 3" allowfullscreen loading="lazy"></iframe>
+        </div>
+
+        <div class="callout tip">
+          <div class="ct">✅ What you should now be able to say</div>
+          <p>“A drone is a UAV — an unmanned aircraft — and the UAV plus its controller, dock and software is a UAS. Inspection uses <em>multirotor</em> drones like DJI’s Matrice because they hover. A quadcopter flies by varying its four motor speeds to control throttle, pitch, roll and yaw, run by a flight controller (brain) and IMU (inner ear). GNSS gives metres of accuracy; RTK sharpens it to about a centimetre, which inspection needs. The camera sits on a stabilised gimbal and the payload is the sensor set (RGB, zoom, thermal). Autonomy climbs from manual → waylines → fully autonomous dock missions flown BVLOS, and safety rests on RTH, geofences, failsafes, and flying by AGL height over the terrain.”</p>
+        </div>
+
+        <p>Next we’ll meet the specific aircraft DIMS commands — the Matrice 4TD — part by part.</p>
+
+        <div id="pager"></div>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

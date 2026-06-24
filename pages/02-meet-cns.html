@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en" data-loc="page">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>02 · Meet CNS & the 6 Projects — DIMS Intern Handbook</title>
+  <link rel="stylesheet" href="../assets/css/handbook.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%232dd4bf'/><text x='50' y='72' font-size='62' text-anchor='middle' fill='%23042' font-family='sans-serif' font-weight='bold'>D</text></svg>">
+  <script src="../assets/js/manifest.js"></script>
+  <script src="../assets/js/handbook.js" defer></script>
+</head>
+<body>
+  <div class="scrim"></div>
+  <div class="layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="content">
+      <header class="topbar" id="topbar"></header>
+      <main class="article" data-page-id="02-meet-cns">
+
+        <div class="page-head">
+          <div class="kicker">Start Here · 02</div>
+          <h1>Meet CNS &amp; the 6 Projects</h1>
+          <p class="lead">You now know what DIMS is. This page is a quick tour of the company building it — <span class="term" data-term="cns">CNS</span> — and a one-screen map of the six projects you’ll keep hearing about. Chapter 17 covers them in full; this is the orientation.</p>
+        </div>
+
+        <h2>Who CNS is</h2>
+        <p><strong>CNS (㈜시엔에스)</strong> is a Korean company that builds <span class="term" data-term="dims">DIMS</span> — a Drone Inspection Management System — and runs it across six funded projects. The company’s hardware foundation is <span class="term" data-term="dji">DJI</span> enterprise gear: the <span class="term" data-term="dock3">Dock 3</span> + <span class="term" data-term="m4td">Matrice 4TD</span> you met in chapter 01. The strategy is simple to state: <em>build one strong platform, then prove and sell it across many real inspection jobs.</em></p>
+
+        <div class="analogy">
+          <div class="ct">🧩 Analogy</div>
+          <p>Think of CNS like a company that builds one excellent game engine (DIMS) and then ships several different games on top of it (forest-fire monitoring, tower-crane inspection, …). The engine is the real asset; each “game” proves it works and pays for the next one.</p>
+        </div>
+
+        <h2>The six projects at a glance</h2>
+        <p>They’re grouped by what role they play. (Full detail in <a href="17-the-projects.html">chapter 17</a>.)</p>
+
+        <h3>Build the platform</h3>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Project</th><th>What it builds</th></tr></thead>
+          <tbody>
+            <tr><td>🧠 <strong>Deep Tech</strong></td><td>DIMS Software v2.0 + AI model v2.0, the 3D twin pipeline, and a 5-task work module (cleaning · coating · painting · inspection · measurement).</td></tr>
+            <tr><td>📊 <strong>TIPS</strong></td><td>The core-AI quality bar — the KPIs DIMS must hit (e.g. defect-detection <span class="term" data-term="f1">F1</span> ≥ 98.5%).</td></tr>
+            <tr><td>🗂️ <strong>Data Voucher</strong></td><td>The standardized inspection <span class="term" data-term="dataset">dataset</span> (~15 GB, 5,000+ records) that trains the AI.</td></tr>
+          </tbody>
+        </table></div>
+
+        <h3>Feed it new sensors</h3>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Project</th><th>What it builds</th></tr></thead>
+          <tbody>
+            <tr><td>🛰️ <strong>SWIR</strong></td><td>A drone-mounted multi-band sensor payload (<span class="term" data-term="multispectral">Multispectral</span> + <span class="term" data-term="swir">SWIR</span> + <span class="term" data-term="lwir">LWIR</span>) + the aircraft to carry it — hardware R&amp;D.</td></tr>
+          </tbody>
+        </table></div>
+
+        <h3>Run real missions</h3>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Project</th><th>What it does</th></tr></thead>
+          <tbody>
+            <tr><td>🏗️ <strong>Hyundai E&amp;C — Tower Crane</strong></td><td>Autonomous drone tower-crane inspection with a DIMS-linked auto-report.</td></tr>
+            <tr><td>🔥 <strong>Forest Fire — Bomunsan</strong></td><td>Drone forest-fire early detection + <span class="term" data-term="swarm">swarm</span> control at Bomunsan (보문산), Daejeon — <strong>DIMS’s first real field deployment</strong>.</td></tr>
+          </tbody>
+        </table></div>
+
+        <figure>
+          <img src="../assets/img/diagrams/dims-architecture.svg" alt="How the projects feed the DIMS platform">
+          <figcaption>Everything points at one platform: the core projects build DIMS, SWIR feeds it sensors, and the field projects run real missions on it.</figcaption>
+        </figure>
+
+        <div class="callout note">
+          <div class="ct">🧭 Where you fit</div>
+          <p>As interns you’ll mostly touch the <strong>platform core</strong> — the software (chapters 12–14) and the AI/data (chapter 15, plus the Data Voucher dataset). Knowing how your work feeds the field deployments (especially the Bomunsan forest-fire launch) is what makes the day-to-day make sense.</p>
+        </div>
+
+        <div class="callout tip">
+          <div class="ct">✅ What you should now be able to say</div>
+          <p>“CNS builds the DIMS platform on DJI Dock 3 + Matrice 4TD and runs six funded projects: three build the platform (Deep Tech, TIPS, Data Voucher), one builds new sensors (SWIR), and two are real field jobs (Tower Crane, Forest Fire) — with the Bomunsan forest-fire project being the first real deployment.”</p>
+        </div>
+
+        <div id="pager"></div>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

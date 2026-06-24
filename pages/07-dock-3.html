@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en" data-loc="page">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>07 · DJI Dock 3 — DIMS Intern Handbook</title>
+  <link rel="stylesheet" href="../assets/css/handbook.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%232dd4bf'/><text x='50' y='72' font-size='62' text-anchor='middle' fill='%23042' font-family='sans-serif' font-weight='bold'>D</text></svg>">
+  <script src="../assets/js/manifest.js"></script>
+  <script src="../assets/js/handbook.js" defer></script>
+</head>
+<body>
+  <div class="scrim"></div>
+  <div class="layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="content">
+      <header class="topbar" id="topbar"></header>
+      <main class="article" data-page-id="07-dock-3">
+
+        <div class="page-head">
+          <div class="kicker">THE HARDWARE · 07</div>
+          <h1>DJI Dock 3</h1>
+          <p class="lead">Every DIMS mission starts and ends inside a weatherproof box on a rooftop. The DJI Dock 3 is the home, garage, charger and launchpad for our drone — so the whole point of DIMS (a drone that inspects <em>by itself</em>, with no one in the field) only works because this box exists.</p>
+        </div>
+
+        <h2>What a “dock” even is</h2>
+        <p>A <span class="term" data-term="dock">dock</span> is a <strong>drone-in-a-box</strong>: a self-contained station that stores a drone, charges it, shelters it from weather, and opens up to launch and recover it automatically. No pilot drives out, no one unpacks a drone from a case — the dock sits permanently on site and the drone lives inside it.</p>
+
+        <div class="analogy">
+          <div class="ct">🧩 Analogy</div>
+          <p>Think of a robot vacuum and its charging dock. The vacuum leaves on a schedule, cleans, and returns to its base to recharge — you never touch it. The <span class="term" data-term="dock3">DJI Dock 3</span> is that base, except the “vacuum” is an inspection drone, the “floor” is a forest or a tower crane, and the base is a 55-kilogram weatherproof station built to survive years outdoors.</p>
+        </div>
+
+        <p>The <span class="term" data-term="dji">DJI</span> Dock 3 is DJI’s <strong>third-generation</strong> dock. It houses a single <span class="term" data-term="m4td">Matrice 4D-series</span> drone, and DIMS commands a <em>real</em> Dock 3 remotely over the <span class="term" data-term="cloudapi">DJI Cloud API</span> — the messaging protocol we cover in <a href="10-cloud-api.html">chapter 10</a>. That remote command is what makes <span class="term" data-term="bvlos">BVLOS</span> (Beyond Visual Line Of Sight — flying where no operator can physically see the drone) possible.</p>
+
+        <div class="img-2">
+          <figure>
+            <img src="../assets/img/dji/dock3-product.png" alt="DJI Dock 3 closed, a weatherproof white station">
+            <figcaption>Dock 3, cover closed — how it sits between flights, sheltering the drone. <span class="src">Source: DJI</span></figcaption>
+          </figure>
+          <figure>
+            <img src="../assets/img/dji/dock3-open-drone.png" alt="DJI Dock 3 open with the Matrice drone launching">
+            <figcaption>Dock 3 open, drone lifting off — the cover splits and the drone launches itself. <span class="src">Source: DJI</span></figcaption>
+          </figure>
+        </div>
+
+        <h2>The launch → fly → land → charge cycle</h2>
+        <p>Here is the loop the dock runs every mission, fully unattended:</p>
+        <ol>
+          <li><strong>Wake &amp; check.</strong> DIMS sends a flight task. The dock runs self-checks, reads its <span class="term" data-term="rtk">RTK</span> position fix, and confirms the weather is safe to fly.</li>
+          <li><strong>Open.</strong> The two-piece cover slides apart, exposing the landing pad with the drone on it.</li>
+          <li><strong>Launch.</strong> The drone powers up, spins its props, and takes off straight up out of the open dock.</li>
+          <li><strong>Fly the mission.</strong> The drone flies its <span class="term" data-term="wayline">wayline</span> autonomously, streaming live video and <span class="term" data-term="telemetry">telemetry</span> back to DIMS.</li>
+          <li><strong>Return &amp; land.</strong> When done (or low on battery), the drone runs <span class="term" data-term="rth">RTH</span> — Return To Home — and lands precisely back on the pad, guided by RTK to centimetre accuracy.</li>
+          <li><strong>Close &amp; charge.</strong> The cover closes over the drone and the dock recharges it, ready for the next flight.</li>
+        </ol>
+
+        <div class="callout note">
+          <div class="ct">Why centimetre landing matters</div>
+          <p>The dock is small and the cover has to close over the drone exactly. A normal GPS is only accurate to a few metres — nowhere near precise enough. The dock’s built-in RTK base station (more below) is what lets the drone land on a pad smaller than a doormat, every time.</p>
+        </div>
+
+        <h2>Why a dock changes the economics of inspection</h2>
+        <p>This is the real reason DIMS is built around a dock. A traditional drone inspection needs a <strong>certified pilot to physically travel</strong> to the site, set up, fly, pack down, and drive home — every single time. That is expensive, slow, and limits you to a few flights a week in good weather.</p>
+        <p>A dock removes the human from the field. Once it’s installed, flights are <strong>scheduled and autonomous</strong>: the drone can patrol a forest at dawn, noon and dusk, or inspect a structure on a fixed cadence, with the operator watching from a browser anywhere in the country. The cost per flight collapses, and you can fly far more often — which is exactly what early forest-fire detection or routine structural monitoring needs.</p>
+
+        <div class="callout warn">
+          <div class="ct">⚠ With great autonomy…</div>
+          <p>A real dock launching a real drone with no one present is powerful and dangerous. DIMS deliberately forbids the real dock from auto-deploying carelessly (e.g. on a stray timer) — there is a “scheduler armed” master gate that defaults to <strong>off</strong>. We cover the full safety regime in <a href="19-safety-rules.html">chapter 19</a>.</p>
+        </div>
+
+        <h2>The official specs</h2>
+        <p>These are the figures you’ll quote when someone asks “what can this thing handle?” All from DJI’s official Dock 3 specification.</p>
+
+        <div class="specs">
+          <div class="spec"><div class="k">Weight</div><div class="v">55<span class="u">kg</span></div><div class="u">excl. aircraft</div></div>
+          <div class="spec"><div class="k">Ingress protection</div><div class="v">IP56</div><div class="u">dust + jet water</div></div>
+          <div class="spec"><div class="k">Operating temp</div><div class="v">−30→50<span class="u">°C</span></div><div class="u">harsh climates</div></div>
+          <div class="spec"><div class="k">Charge 15→95%</div><div class="v">~27<span class="u">min</span></div><div class="u">at 25 °C</div></div>
+          <div class="spec"><div class="k">Backup power</div><div class="v">&gt;4<span class="u">h</span></div><div class="u">12 Ah / 12 V battery</div></div>
+          <div class="spec"><div class="k">Max landing wind</div><div class="v">12<span class="u">m/s</span></div><div class="u">~43 km/h</div></div>
+          <div class="spec"><div class="k">Max altitude</div><div class="v">4500<span class="u">m</span></div><div class="u">operating</div></div>
+          <div class="spec"><div class="k">Holds</div><div class="v">1</div><div class="u">M4D-series aircraft</div></div>
+        </div>
+
+        <div class="table-wrap"><table>
+          <thead><tr><th>Spec</th><th>Value</th></tr></thead>
+          <tbody>
+            <tr><td>Dimensions, cover open</td><td>1760 × 745 × 485 mm</td></tr>
+            <tr><td>Dimensions, cover closed</td><td>640 × 745 × 770 mm</td></tr>
+            <tr><td>Weight (excluding aircraft)</td><td>55 kg</td></tr>
+            <tr><td>Ingress protection</td><td>IP56</td></tr>
+            <tr><td>Operating temperature</td><td>−30 °C to 50 °C</td></tr>
+            <tr><td>Max wind resistance (landing)</td><td>12 m/s</td></tr>
+            <tr><td>Max operating altitude</td><td>4500 m</td></tr>
+            <tr><td>Power input</td><td>100–240 V AC, max 800 W</td></tr>
+            <tr><td>Aircraft charging (15%→95%, 25 °C)</td><td>~27 min</td></tr>
+            <tr><td>Backup battery</td><td>12 Ah / 12 V, keeps dock running &gt; 4 h on outage</td></tr>
+            <tr><td>Aircraft capacity</td><td>1 × Matrice 4D series</td></tr>
+            <tr><td>Network</td><td>Gigabit Ethernet (10/100/1000); optional 4G via DJI Cellular Dongle 2</td></tr>
+            <tr><td>Positioning</td><td>Built-in multi-frequency GNSS RTK base station</td></tr>
+          </tbody>
+        </table></div>
+
+        <h3>The cover, the weather station, the RTK base</h3>
+        <p>Three built-in pieces do most of the work:</p>
+        <ul>
+          <li><strong>The cover.</strong> A motorised two-piece lid that opens for launch/landing and seals shut otherwise, giving the drone its IP56-rated shelter from dust, rain and sun.</li>
+          <li><strong>The weather station.</strong> Sensors for wind, rain and temperature, so the dock can <em>refuse to launch</em> (or recall the drone) when conditions exceed safe limits — for example that 12 m/s landing-wind ceiling.</li>
+          <li><strong>The <span class="term" data-term="gnss">GNSS</span> RTK base station.</strong> A fixed, surveyed reference that broadcasts a correction signal. The drone combines it with its own satellite fix to get <strong>centimetre-level</strong> positioning — the foundation for precise landing and for accurate inspection coordinates.</li>
+        </ul>
+
+        <p>The dock can even be <strong>vehicle-mounted</strong>: bolted to a truck and driven to a site, turning any location into a temporary autonomous drone base — handy for disaster response where there’s no rooftop to install on.</p>
+
+        <h2>Dock 3 vs the older Dock 2</h2>
+        <p>You’ll hear both names. Here’s the gist — Dock 2 was the earlier, smaller generation; Dock 3 is the bigger, tougher, more flexible successor DIMS targets.</p>
+
+        <div class="tabs">
+          <div class="tab-btns">
+            <button class="tab-btn">📦 Dock 2 (earlier)</button>
+            <button class="tab-btn">🚀 Dock 3 (current)</button>
+          </div>
+          <div class="tab-panel">
+            <p>The previous generation: smaller and lighter, designed mainly for fixed rooftop installs in milder conditions. It pairs with earlier Matrice drones and established the “drone-in-a-box” pattern DIMS is built on. Our backend originally spoke Dock 2’s dialect of the Cloud API.</p>
+          </div>
+          <div class="tab-panel">
+            <p>The current generation DIMS uses: built for <strong>harsher environments</strong> (−30 to 50 °C, IP56), with <strong>faster charging</strong> (~27 min) and the option to be <strong>vehicle-mounted</strong>. It carries the Matrice 4D series. Moving from Dock 2 to Dock 3 needed a couple of protocol fixes in our backend before the real hardware would bind to DIMS.</p>
+          </div>
+        </div>
+
+        <div class="callout tip">
+          <div class="ct">💡 For DIMS specifically</div>
+          <p>As of June 2026 a real Dock 3 + <span class="term" data-term="m4td">Matrice 4TD</span> is connected to DIMS over the Cloud API — telemetry and control proven on actual hardware. Commands and status flow over <span class="term" data-term="mqtt">MQTT</span>, the lightweight messaging system the Cloud API runs on (chapter 10).</p>
+        </div>
+
+        <h2>A real Dock 3, live in DIMS</h2>
+        <p>This isn’t a render — it’s the DIMS console showing a <strong>real</strong> Dock 3 connected and streaming, the first proof that our cloud can talk to physical hardware.</p>
+        <figure>
+          <img src="../assets/img/screenshots/2026-06-23-dock-live-console.png" alt="DIMS console showing a real DJI Dock 3 live, with telemetry">
+          <figcaption>A real DJI Dock 3 live in the DIMS console — bound, online, and reporting dock telemetry.</figcaption>
+        </figure>
+
+        <h2>Watch it in action</h2>
+        <p>DJI’s official 2-minute intro shows the cover opening, the launch, and the dock’s build. Worth a watch before the next chapters on the drone itself.</p>
+        <div class="video">
+          <iframe src="https://www.youtube-nocookie.com/embed/OwUwgpqgcMA" title="Introducing DJI Dock 3" allowfullscreen loading="lazy"></iframe>
+        </div>
+
+        <details class="deep">
+          <summary>Want the deep version? How DIMS actually controls the dock</summary>
+          <div class="deep-body">
+            <p>DIMS never plugs a cable into the dock. The dock connects out to our cloud over the network (gigabit Ethernet, or 4G via the Cellular Dongle 2) and authenticates against our organisation. From then on, every action — open cover, launch, take a photo, return home, force-close cover — is a structured message over <span class="term" data-term="mqtt">MQTT</span> following the <span class="term" data-term="cloudapi">Cloud API</span> spec. The dock streams back its own telemetry (battery, cover state, weather, network) separately from the <em>aircraft’s</em> telemetry, which is one of the subtleties our backend has to untangle. Binding a Dock 3 needed two fixes versus Dock 2: a config field had to be sent as a string, and the org-bind reply needed per-device error info. Detail lives in <a href="10-cloud-api.html">chapter 10</a>.</p>
+          </div>
+        </details>
+
+        <div class="callout tip">
+          <div class="ct">✅ What you should now be able to say</div>
+          <p>“The DJI Dock 3 is a weatherproof, 55 kg drone-in-a-box — DJI’s third generation — that houses, charges, shelters and auto-launches a Matrice 4D-series drone with no one on site. It has its own RTK base station and weather station, survives −30 to 50 °C, charges 15→95% in about 27 minutes, and has over 4 hours of battery backup. It can even be vehicle-mounted. DIMS commands a real Dock 3 remotely over the DJI Cloud API to enable 24/7 BVLOS inspection — which is why a dock, not just a drone, is at the heart of the product. And a real dock must never auto-deploy carelessly.”</p>
+        </div>
+
+        <p>Next we meet the aircraft that lives inside it: the Matrice 4TD.</p>
+
+        <div id="pager"></div>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

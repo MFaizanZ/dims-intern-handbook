@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en" data-loc="page">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>15 · AI Inside DIMS — DIMS Intern Handbook</title>
+  <link rel="stylesheet" href="../assets/css/handbook.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%232dd4bf'/><text x='50' y='72' font-size='62' text-anchor='middle' fill='%23042' font-family='sans-serif' font-weight='bold'>D</text></svg>">
+  <script src="../assets/js/manifest.js"></script>
+  <script src="../assets/js/handbook.js" defer></script>
+</head>
+<body>
+  <div class="scrim"></div>
+  <div class="layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="content">
+      <header class="topbar" id="topbar"></header>
+      <main class="article" data-page-id="15-ai-in-dims">
+
+        <div class="page-head">
+          <div class="kicker">The Software · 15</div>
+          <h1>AI Inside DIMS</h1>
+          <p class="lead">This is where it all comes together. The AI chapter (05) taught you how detection works in general; here we follow a real <span class="term" data-term="yolo">YOLO</span> detection through DIMS — from a video frame, to a box around a fire, to a single GPS coordinate on the map. This pipeline is the heart of the product.</p>
+        </div>
+
+        <p>If you read only one technical chapter closely, make it this one — it ties together AI (ch 05), maps &amp; raycasting (ch 06), and the backend (ch 13).</p>
+
+        <h2>The job: turn video into located alerts</h2>
+        <p>A <span class="term" data-term="livestream">live video</span> feed by itself is just pixels. DIMS’s AI layer has to answer two questions about every frame, fast enough to keep up with a flying drone:</p>
+        <ol>
+          <li><strong>Is there something we care about?</strong> (fire, smoke, a crack, a defect) — that’s <span class="term" data-term="inference">inference</span> with a YOLO model.</li>
+          <li><strong>Where in the real world is it?</strong> — that’s the <span class="term" data-term="raycast">raycast</span> step, unique to DIMS.</li>
+        </ol>
+
+        <figure>
+          <img src="../assets/img/diagrams/raycast-pipeline.svg" alt="The detect to raycast to alert pipeline">
+          <figcaption>The three-step DIMS AI pipeline. Each step is a separate backend service (ch 13).</figcaption>
+        </figure>
+
+        <h2>Step 1 — Detection (the YOLO models)</h2>
+        <p>DIMS ships <strong>7 production YOLO models</strong> as <span class="term" data-term="onnx">ONNX</span> files — for example a <code>fire_smoke</code> model for the forest-fire use-case, plus models for structural defects and other inspection targets. The console even has a <strong>model selector</strong> so an operator can switch which model runs on the live feed.</p>
+        <p>Each model returns <span class="term" data-term="bbox">bounding boxes</span> with a confidence score (e.g. <code>fire 0.74</code>). Some are <span class="term" data-term="segmentation">segmentation</span> models that also return a pixel-level polygon mask of the flames, not just a rectangle.</p>
+
+        <figure>
+          <img src="../assets/img/screenshots/2026-06-23-finetuned-detection.png" alt="Fine-tuned YOLO fire/smoke detection on real footage in DIMS">
+          <figcaption>A fine-tuned <code>fire_smoke</code> model boxing a real plume on real footage in the DIMS console.</figcaption>
+        </figure>
+
+        <div class="callout note">
+          <div class="ct">🔧 Fine-tuning</div>
+          <p>“Fine-tuning” means taking a general model and training it a little more on <em>our</em> data (real fire/smoke imagery) so it performs better on our exact problem. DIMS has a fine-tune pipeline for exactly this. A fine-tuned model is what produced the detection above — it boxes the plume far more confidently than a generic model.</p>
+        </div>
+
+        <h3>Running it fast — the GPU</h3>
+        <p>A flying drone produces many frames per second, so inference has to be quick. DIMS runs its models on an <span class="term" data-term="gpu">NVIDIA RTX 5080</span> <span class="term" data-term="gpu">GPU</span> via <span class="term" data-term="cuda">CUDA</span> (using <code>onnxruntime-gpu</code>). The speed-up is dramatic:</p>
+        <div class="specs">
+          <div class="spec"><div class="k">GPU inference</div><div class="v">12.8<span class="u">ms</span></div><div class="u">~78 fps</div></div>
+          <div class="spec"><div class="k">CPU inference</div><div class="v">83.6<span class="u">ms</span></div><div class="u">~12 fps</div></div>
+          <div class="spec"><div class="k">Speed-up</div><div class="v">~6.5×</div><div class="u">GPU vs CPU</div></div>
+          <div class="spec"><div class="k">Models</div><div class="v">7</div><div class="u">production ONNX</div></div>
+        </div>
+        <div class="callout warn">
+          <div class="ct">⚠ A real gotcha you’ll hit</div>
+          <p>The GPU build is fragile: a plain <code>uv run</code> can quietly revert the Python environment back to the CPU-only package, silently dropping you from 78 fps to 12. There’s a repair script (<code>gpu-setup.ps1</code>) and the rule “use <code>--no-sync</code>”. If inference suddenly gets slow, suspect this first.</p>
+        </div>
+
+        <h2>Step 2 — Raycast (pixels → coordinates)</h2>
+        <p>This is the step that makes DIMS an <em>inspection system</em> and not just a camera. A detection is a box in a 2D image; we need a real-world point. The <strong>coordinatizer</strong> service does this by raycasting (ch 06): it takes the drone’s exact pose and shoots a ray from the camera, through the centre of the detection box, until it hits a 3D model of the ground.</p>
+        <h3>What it needs</h3>
+        <ul>
+          <li><strong>The drone’s pose</strong> — position + the <span class="term" data-term="gimbal">gimbal</span> angles at the moment of capture. DIMS gets this from the drone’s <span class="term" data-term="osd">OSD</span> telemetry and from the <strong>XMP metadata</strong> embedded in each photo.</li>
+          <li><strong>A surface to hit</strong> — a <span class="term" data-term="dsm">DSM</span> (a GeoTIFF height map, read with <code>rasterio</code>) for terrain, or a 3D mesh (OBJ/PLY, read with <code>trimesh</code>) for structures. These come from <span class="term" data-term="terra">DJI Terra</span> (ch 11).</li>
+          <li><strong>Correct coordinate maths</strong> — the surface is in a local projected system (UTM); the answer must be in global <span class="term" data-term="wgs84">WGS84</span> lat/long. DIMS converts between them with <code>pyproj</code> and even corrects for meridian convergence. It also uses the M4TD’s per-camera lens parameters (intrinsics).</li>
+        </ul>
+
+        <figure>
+          <img src="../assets/img/screenshots/2026-06-22-raycast-footprint.png" alt="Raycast footprint projected onto real terrain in the DIMS 3D twin">
+          <figcaption>The raycast “footprint” of the camera projected onto the real terrain twin — the geometry behind turning a detection into a coordinate.</figcaption>
+        </figure>
+
+        <div class="callout key">
+          <div class="ct">🔑 The 2D → 3D leap</div>
+          <p>A fire seen as a cluster of orange pixels becomes <code>36.32°N, 127.39°E</code>. That single conversion is DIMS’s signature capability — it’s why an operator gets a pin on a map instead of “somewhere in this video”.</p>
+        </div>
+
+        <details class="deep">
+          <summary>Want the deep version? Laser vs raycast for coordinates</summary>
+          <div class="deep-body">
+            <p>There are two ways to geolocate a target. The <strong>primary</strong> method is the raycast described above — it works from any detection, using the terrain twin. The <strong>bonus</strong> method is the M4TD’s <strong>laser rangefinder</strong> (ch 08): point the laser at the target and it returns an exact distance, which combined with the drone pose gives a coordinate directly — no terrain model needed. DJI documents the laser “PinPoint” command for some older payloads but not officially for the M4TD, so DIMS treats raycast as primary and the laser as something to verify on real hardware.</p>
+          </div>
+        </details>
+
+        <h2>Step 3 — Alert (one clean, located event)</h2>
+        <p>The final step classifies a located detection into a <strong>severity</strong>, saves it as an <code>alerts</code> record, and fans it out — to the operator’s map, to mobile, and (for the forest-fire project) to the city’s disaster-safety platform — all within a <strong>≤8-second</strong> target. Crucially, DIMS <strong>de-duplicates</strong>: the same fire seen across many frames must produce <em>one</em> alert, not hundreds, so detections within ~120 m and ~120 s of an existing alert are merged.</p>
+
+        <figure>
+          <img src="../assets/img/screenshots/2026-06-22-hybrid-fire-fpv.png" alt="The drone FPV on a fire with a single coordinatized alert">
+          <figcaption>The end-to-end “Fire Watch” demo: the drone flies to the fire, its camera fills the view, the model boxes the plume, and DIMS pins <strong>one</strong> real alert.</figcaption>
+        </figure>
+
+        <h2>How accurate is it?</h2>
+        <p>Honesty matters here. In the synthetic demo, the located coordinate lands roughly <strong>24–74 m</strong> from the true fire — but most of that error is a <em>datum gap</em> between the terrain used to <em>render</em> the demo and the <span class="term" data-term="dsm">DSM</span> used to <em>raycast</em>. The raycasting algorithm itself is accurate to about <strong>1.4 m</strong> when measured directly on the DSM. On real missions, where the same DSM is used throughout, that rendering gap disappears.</p>
+        <p>For context, the project’s formal accuracy goals (the <a href="17-the-projects.html">TIPS</a> KPIs) include defect-detection <span class="term" data-term="f1">F1</span> ≥ 98.5% and high-rate 3D defect mapping.</p>
+
+        <div class="callout tip">
+          <div class="ct">✅ What you should now be able to say</div>
+          <p>“DIMS runs 7 YOLO ONNX models on an RTX 5080 GPU (~6.5× faster than CPU) to box fire/smoke/defects on the live feed. A coordinatizer then raycasts each box — using the drone’s pose from OSD + photo XMP, onto a DJI-Terra DSM, with correct UTM↔WGS84 maths — to turn the detection into real GPS coordinates. Finally the alert engine de-duplicates, scores severity, and dispatches one located alert within 8 seconds.”</p>
+        </div>
+
+        <div id="pager"></div>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

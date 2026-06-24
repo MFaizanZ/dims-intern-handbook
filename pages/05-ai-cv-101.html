@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en" data-loc="page">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>05 · AI &amp; Computer Vision 101 — DIMS Intern Handbook</title>
+  <link rel="stylesheet" href="../assets/css/handbook.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%232dd4bf'/><text x='50' y='72' font-size='62' text-anchor='middle' fill='%23042' font-family='sans-serif' font-weight='bold'>D</text></svg>">
+  <script src="../assets/js/manifest.js"></script>
+  <script src="../assets/js/handbook.js" defer></script>
+</head>
+<body>
+  <div class="scrim"></div>
+  <div class="layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="content">
+      <header class="topbar" id="topbar"></header>
+      <main class="article" data-page-id="05-ai-cv-101">
+
+        <div class="page-head">
+          <div class="kicker">FOUNDATIONS · 05</div>
+          <h1>AI &amp; Computer Vision 101</h1>
+          <p class="lead">DIMS is, at its core, an AI system with wings. This chapter teaches you — from absolute zero, no maths — the handful of ideas that make a drone able to <em>look at</em> a video and say “that’s fire.” By the end you’ll understand every AI word the rest of the handbook throws at you.</p>
+        </div>
+
+        <h2>1. AI vs Machine Learning — the one big shift</h2>
+        <p>For most of computing history, software worked by <strong>rules a human wrote</strong>: “if the temperature is above 100, sound the alarm.” That works great when you can spell out the rule. But how would you write the rule for “this group of pixels is smoke”? Smoke has no fixed shape, colour, or size. You simply cannot type out an <code>if</code>-statement for it.</p>
+        <p><strong>Artificial Intelligence (AI)</strong> is the broad goal of making machines do things that normally need human judgement. <strong>Machine Learning (ML)</strong> is the practical technique that gets us there, and it flips the old approach on its head: instead of writing the rules, you <strong>show the machine thousands of examples</strong> and let it discover the pattern itself.</p>
+
+        <div class="callout key">
+          <div class="ct">🔑 The one idea to remember</div>
+          <p>Classic programming: <em>you write the rules</em>. Machine learning: <em>you provide the examples, and the machine writes its own rules</em>. Everything else in this chapter is detail on top of that single flip.</p>
+        </div>
+
+        <div class="analogy">
+          <div class="ct">🧩 Analogy</div>
+          <p>You don’t teach a child what a dog is by reciting “four legs, fur, a tail, barks.” (A cat fits that too.) You just point at dogs — “dog… dog… that’s a dog” — a few hundred times, and one day the child reliably spots a dog they’ve never seen before. They learned the <em>pattern</em> from <em>examples</em>. That is exactly how an ML model learns to spot fire.</p>
+        </div>
+
+        <h2>2. Neural networks, in plain English</h2>
+        <p>The most powerful kind of ML today uses a <span class="term" data-term="neuralnet">neural network</span> — software loosely inspired by how brain cells connect. Picture it as <strong>layers of tiny decision-makers</strong> (“units”). The first layer looks at the raw pixels and notices very simple things: edges, blobs of colour. The next layer combines those into slightly bigger ideas — a curve, a corner. Layer after layer, the ideas get richer: textures → shapes → “a wing-like thing” → “a drone.”</p>
+        <p>Between every unit sit connections, each with a number called a <strong>weight</strong> that says how much one unit’s opinion matters to the next. A fresh network has random weights and is useless. <strong>Learning</strong> is just nudging millions of those weights, a tiny bit at a time, until the whole network reliably produces the right answer.</p>
+
+        <div class="analogy">
+          <div class="ct">🧩 Analogy</div>
+          <p>Imagine a huge panel of judges deciding “is this a face?” Junior judges only see fragments — an eye here, a nostril there. They whisper their findings up to senior judges who combine them — “two eyes above a nose above a mouth… yes, a face.” At first the judges trust each other randomly and get it wrong. After being corrected thousands of times, each judge learns exactly how much to trust each colleague. Those trust levels are the <strong>weights</strong>. A trained network is just a panel that has finally learned who to listen to.</p>
+        </div>
+
+        <h2>3. Training vs Inference — the two phases</h2>
+        <p>Every AI model lives a two-part life, and the distinction matters enormously for DIMS.</p>
+        <div class="table-wrap"><table>
+          <thead><tr><th></th><th>🏋️ <span class="term" data-term="training">Training</span></th><th>⚡ <span class="term" data-term="inference">Inference</span></th></tr></thead>
+          <tbody>
+            <tr><td><strong>What happens</strong></td><td>Teach the model by showing it labelled examples and correcting its mistakes</td><td>Use the finished model on brand-new data it’s never seen</td></tr>
+            <tr><td><strong>When</strong></td><td>Once, up front (then occasionally re-done)</td><td>Constantly, live, in the field</td></tr>
+            <tr><td><strong>Speed</strong></td><td>Slow — hours or days is fine</td><td>Fast — must keep up with live video</td></tr>
+            <tr><td><strong>Where</strong></td><td>On powerful machines with big GPUs</td><td>Wherever the answer is needed, right now</td></tr>
+          </tbody>
+        </table></div>
+        <p>Training is like <strong>studying for an exam</strong>; inference is <strong>sitting the exam</strong>. You study once, slowly, painfully — then you answer questions fast. <strong>DIMS runs inference on every single video frame</strong> coming off the drone. At dozens of frames per second, the model must answer “any fire? any defect?” in milliseconds, over and over. That speed requirement drives a lot of the engineering you’ll meet later.</p>
+
+        <h2>4. Datasets &amp; labelling — the fuel</h2>
+        <p>A model is only as good as the examples it learns from. A <span class="term" data-term="dataset">dataset</span> is the big collection of those examples. For our work, that means thousands of images, each <strong>labelled</strong> by a human who drew a box around every fire, every crack, every defect and typed what it is. The model never sees your labels at inference time — it learns from them during training, then reproduces that judgement on its own.</p>
+        <p>Two things decide dataset quality: <strong>size</strong> (more varied examples → the model generalises better) and <strong>correctness</strong> (sloppy labels teach the model the wrong thing — “garbage in, garbage out”). Building a clean, standardized dataset is real, valuable work — which is exactly why CNS has a whole project for it.</p>
+
+        <div class="callout note">
+          <div class="ct">CNS connection · Data Voucher</div>
+          <p>CNS’s <strong>Data Voucher</strong> project builds a standardized <em>Drone Facility-Inspection &amp; Cleaning Dataset</em> — thousands of labelled records that feed the DIMS AI. Good data is not a side task; it’s the foundation everything else stands on. (Full detail in <a href="17-the-projects.html">chapter 17</a>.)</p>
+        </div>
+
+        <h2>5. Computer-vision tasks — three flavours of “looking”</h2>
+        <p><span class="term" data-term="cv">Computer vision (CV)</span> is the branch of AI that makes sense of images and video. When people say “the model sees the fire,” they mean one of three increasingly precise tasks. Knowing the difference is essential vocabulary on the DIMS team.</p>
+
+        <div class="tabs">
+          <div class="tab-btns">
+            <button class="tab-btn">🏷️ Classification</button>
+            <button class="tab-btn">📦 Detection</button>
+            <button class="tab-btn">🎨 Segmentation</button>
+          </div>
+          <div class="tab-panel">
+            <p><strong>Classification</strong> answers <em>one</em> question about the <em>whole</em> image: “What is this a picture of?” → “fire.” It’s the simplest task — a single label for the frame. The catch: it tells you fire is present, but <strong>not where</strong>. For a drone that needs to point a camera or pin a coordinate, “somewhere in this frame” isn’t good enough.</p>
+          </div>
+          <div class="tab-panel">
+            <p><strong>Object detection</strong> answers “what, and <em>where</em>?” It draws a <span class="term" data-term="bbox">bounding box</span> — a rectangle — around each object and attaches a <strong>confidence</strong> score, e.g. <code>fire 0.74</code> (the model is 74% sure). One frame can hold many boxes. This is the workhorse of DIMS: the box gives a screen location, which DIMS later turns into a real-world coordinate. (See <a href="16-pixels-to-coordinates.html">chapter 16</a>.)</p>
+          </div>
+          <div class="tab-panel">
+            <p><span class="term" data-term="segmentation">Segmentation</span> is the most precise: instead of a rough rectangle it outlines the object’s <strong>exact shape</strong>, labelling every pixel as “fire / not-fire.” This pixel-perfect outline is called a <em>mask</em>. It’s heavier to compute but tells you the true size and shape of a plume or a crack — useful when “how big is it?” matters, not just “where is it?”</p>
+          </div>
+        </div>
+
+        <p>A handy mental ladder: <strong>classification</strong> = “fire is here somewhere,” <strong>detection</strong> = “fire is in <em>this box</em>,” <strong>segmentation</strong> = “fire is <em>these exact pixels</em>.” DIMS uses detection as its bread-and-butter and segmentation when shape matters.</p>
+
+        <h2>6. What YOLO is</h2>
+        <p>The detector DIMS relies on is <span class="term" data-term="yolo">YOLO</span> — “You Only Look Once.” The name describes its trick: older detectors scanned an image many times in pieces; YOLO looks at the whole frame in <em>one</em> pass, which makes it dramatically faster. Fast enough to run on <strong>live video</strong>, in real time.</p>
+
+        <div class="analogy">
+          <div class="ct">🧩 Analogy</div>
+          <p>Some people read by sounding out every letter, one at a time — slow but thorough. A fluent reader takes in a whole line at a glance. YOLO is the fluent reader: one look at the entire frame and it knows what’s there and where. That single glance is why it can keep up with a flying camera.</p>
+        </div>
+
+        <p>Why does “real time” matter so much for a <em>flying</em> drone? Because the drone — and the fire — won’t wait. If the model takes two seconds per frame, the aircraft has already moved tens of metres and the moment is gone. Real-time detection is what lets DIMS aim the gimbal, track a target, and pin a fresh coordinate <em>while it’s still happening</em>. <strong>DIMS ships 7 production YOLO models</strong> — for fire and smoke, structural defects, and more — each trained for a different inspection job.</p>
+
+        <figure>
+          <img src="../assets/img/screenshots/2026-06-23-finetuned-detection.png" alt="DIMS YOLO model drawing fire and smoke bounding boxes with confidence scores on real footage">
+          <figcaption>A DIMS YOLO model doing object detection on real footage: each <span class="term" data-term="bbox">bounding box</span> labels a fire/smoke region with a confidence score. This is the same detection step described in tab “Detection” above — running live, not in a lab.</figcaption>
+        </figure>
+
+        <h2>7. Running models fast — formats, GPUs &amp; CUDA</h2>
+        <p>A trained model is a big bundle of those learned weights. To actually <em>run</em> it efficiently, two things matter: the <strong>format</strong> you save it in, and the <strong>hardware</strong> you run it on.</p>
+
+        <h3>Model formats</h3>
+        <p><span class="term" data-term="onnx">ONNX</span> (Open Neural Network Exchange) is a <strong>portable</strong> file format — train a model in one toolkit, export to ONNX, and run it almost anywhere. DIMS ships its models as ONNX for exactly this flexibility. <span class="term" data-term="tensorrt">TensorRT</span> is NVIDIA’s <strong>speed-optimized</strong> format: it rewrites a model to squeeze maximum performance out of NVIDIA hardware specifically. Think of it as ONNX = “runs everywhere,” TensorRT = “runs blazing fast on NVIDIA.”</p>
+
+        <h3>Why GPUs beat CPUs for AI</h3>
+        <p>A <strong>CPU</strong> is like a few brilliant chefs — it does a small number of tasks, one after another, very cleverly. A <span class="term" data-term="gpu">GPU</span> (graphics processing unit) is like an army of thousands of line cooks — each one simple, but all working <strong>at the same time</strong>. Neural networks are basically the same little calculation repeated millions of times, which is perfect for that army. The result: a GPU can run a model many times faster than a CPU.</p>
+
+        <div class="analogy">
+          <div class="ct">🧩 Analogy</div>
+          <p>To paint a stadium, one master painter (the CPU) does flawless work but takes forever. A thousand decent painters (the GPU), each handed one seat, finish in minutes. AI is the stadium: lots of identical, independent little jobs. That’s why we reach for the crowd, not the master.</p>
+        </div>
+
+        <p><span class="term" data-term="cuda">CUDA</span> is NVIDIA’s software toolkit that lets our code actually <em>command</em> that army of cores. On DIMS, moving inference from the CPU onto an <strong>NVIDIA RTX 5080</strong> GPU via CUDA gives roughly a <strong>6.5× speed-up</strong> — the difference between a sluggish overlay and smooth real-time detection on the live feed.</p>
+
+        <figure>
+          <img src="../assets/img/screenshots/2026-06-22-hybrid-fire-fpv.png" alt="The DIMS console showing AI detection running on the drone's live FPV camera feed, with a coordinatized alert">
+          <figcaption>Real-time inference where it counts: YOLO detection running on the drone’s live first-person camera feed. The fast GPU path is what keeps these boxes locked onto the plume frame-by-frame while the aircraft moves.</figcaption>
+        </figure>
+
+        <h2>8. Measuring accuracy — precision, recall &amp; F1</h2>
+        <p>How do we know a model is any good? “It works” isn’t a number. CV uses two simple measures, then combines them.</p>
+        <ul>
+          <li><strong>Precision</strong> — of everything the model <em>called</em> fire, how much really was fire? Low precision = lots of <strong>false alarms</strong>.</li>
+          <li><strong>Recall</strong> — of all the fire that was <em>actually there</em>, how much did the model <em>catch</em>? Low recall = it <strong>misses</strong> real fires.</li>
+        </ul>
+        <p>These pull against each other: you can catch everything by yelling “fire!” constantly (great recall, terrible precision), or stay silent to avoid false alarms (great precision, useless recall). The <span class="term" data-term="f1">F1 score</span> is a single number that balances both — high F1 means the model is <em>both</em> trustworthy <em>and</em> thorough. <strong>DIMS targets F1 ≥ 98.5%</strong> for defect detection — a deliberately demanding bar, because in inspection a missed crack and a false alarm are both expensive mistakes.</p>
+
+        <div class="callout tip">
+          <div class="ct">One more term: fine-tuning</div>
+          <p>You rarely start a model from scratch. <strong>Fine-tuning</strong> takes a model that already knows a lot about images and gives it a short, focused extra round of training on <em>your</em> specific data — e.g. teaching a general detector what <em>Korean forest</em> smoke looks like. It’s much faster than training from zero and is how DIMS adapts models to each job.</p>
+        </div>
+
+        <details class="deep">
+          <summary>Want the deep version? Confidence thresholds &amp; the precision/recall dial</summary>
+          <div class="deep-body">
+            <p>Every detection comes with a confidence (that <code>0.74</code>). DIMS only <em>acts</em> on boxes above a chosen <strong>threshold</strong>. Raise the threshold and you keep only the surest detections — precision goes up, recall goes down (you reject borderline-but-real fires). Lower it and you catch more but invite false alarms. Tuning that single dial per model and per scenario is a big part of getting real-world behaviour right — and why we measure with F1 rather than one number alone.</p>
+          </div>
+        </details>
+
+        <h2>Where this fits in DIMS</h2>
+        <p>Put it together and you have the <span class="term" data-term="dims">DIMS</span> AI story: a YOLO detector, <em>trained</em> once on a labelled <em>dataset</em>, exported to ONNX, and run as fast <em>inference</em> on an NVIDIA GPU over every frame of live drone video — drawing confident bounding boxes that the rest of the pipeline turns into map coordinates. The next chapters build directly on this foundation.</p>
+
+        <div class="callout tip">
+          <div class="ct">✅ What you should now be able to say</div>
+          <p>“AI learns patterns from examples instead of hand-written rules; a neural network learns by adjusting connection weights. Models are <em>trained</em> once (slow, on a GPU) then run <em>inference</em> live (fast) — DIMS does inference on every video frame. They learn from labelled <em>datasets</em> like the one CNS’s Data Voucher project builds. Computer vision spans classification, object detection (a box + confidence like ‘fire 0.74’), and segmentation (a pixel mask). DIMS uses YOLO — a real-time detector — across 7 production models, runs them as portable ONNX (or fast TensorRT) on an NVIDIA RTX 5080 via CUDA for a ~6.5× speed-up, and judges accuracy with precision, recall and an F1 score targeting ≥98.5%.”</p>
+        </div>
+
+        <div id="pager"></div>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

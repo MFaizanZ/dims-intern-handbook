@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en" data-loc="page">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>04 · Software &amp; Web 101 — DIMS Intern Handbook</title>
+  <link rel="stylesheet" href="../assets/css/handbook.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%232dd4bf'/><text x='50' y='72' font-size='62' text-anchor='middle' fill='%23042' font-family='sans-serif' font-weight='bold'>D</text></svg>">
+  <script src="../assets/js/manifest.js"></script>
+  <script src="../assets/js/handbook.js" defer></script>
+</head>
+<body>
+  <div class="scrim"></div>
+  <div class="layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="content">
+      <header class="topbar" id="topbar"></header>
+      <main class="article" data-page-id="04-software-101">
+
+        <div class="page-head">
+          <div class="kicker">FOUNDATIONS · 04</div>
+          <h1>Software &amp; Web 101</h1>
+          <p class="lead">Before we can explain how DIMS is built, you need the vocabulary that every software person uses without thinking. This chapter starts from absolute zero — what software even <em>is</em> — and ends with you understanding the words you'll hear in every standup. Each idea closes with “…and that's why DIMS uses X.”</p>
+        </div>
+
+        <h2>What software actually is</h2>
+        <p><strong>Software</strong> is just a set of written instructions a computer follows, one after another. You write those instructions in a <strong>programming language</strong> — a strict, unambiguous way of telling the machine exactly what to do (computers do not guess or interpret intent; a missing comma can break everything).</p>
+        <p>Computers only understand raw 1s and 0s, so something has to translate your human-readable code into machine instructions. There are two styles: <strong>compiled</strong> languages translate the whole program <em>up front</em> into a machine file you then run; <strong>interpreted</strong> languages are translated <em>line by line as they run</em>. That's the one-line version — you don't need more.</p>
+        <p>Two languages matter at CNS. <strong>Python</strong> runs the backend and all the AI — it's readable and is the universal language of machine learning. <strong>JavaScript</strong> (and its stricter cousin <strong>TypeScript</strong>, which adds type-checking to catch mistakes early) runs everything you see in the browser. <strong>…and that's why DIMS is Python on the back and TypeScript on the front.</strong></p>
+
+        <div class="analogy">
+          <div class="ct">🧩 Analogy</div>
+          <p>A programming language is like a recipe written for a very literal cook who has zero common sense. If the recipe says “add salt” but never says how much, the cook adds nothing — or the whole jar. Code is that recipe: every step must be spelled out exactly, in the right order.</p>
+        </div>
+
+        <h2>The single most important model: client vs server</h2>
+        <p>If you remember one thing from this chapter, make it this. Almost every web system — DIMS included — is split into two halves that live in different places and talk over the internet:</p>
+        <ul>
+          <li>The <span class="term" data-term="frontend">frontend</span> (a.k.a. the <strong>client</strong>) — the part that runs <em>on your screen</em>, in your web browser. It's what the user sees and clicks.</li>
+          <li>The <span class="term" data-term="backend">backend</span> (a.k.a. the <strong>server</strong>) — the part that runs on a powerful computer <em>somewhere else</em>, doing the heavy work: storing data, running AI, talking to the drone.</li>
+        </ul>
+
+        <div class="callout key">
+          <div class="ct">🔑 The one idea to remember</div>
+          <p>Frontend = what's on the user's screen. Backend = the machine doing the work elsewhere. They are separate programs that send messages to each other. Nearly every “how does X work?” question is answered by asking “is that the frontend or the backend?”</p>
+        </div>
+
+        <div class="analogy">
+          <div class="ct">🧩 Analogy — the restaurant</div>
+          <p>Picture a restaurant. The <strong>dining room</strong> is the <strong>frontend</strong>: the menu, the tables, where you (the user) sit and place orders. The <strong>kitchen</strong> is the <strong>backend</strong>: you never go in there, but it does the real cooking. The <strong>pantry</strong> is the <strong>database</strong>: where all the ingredients are stored. A waiter carries orders from the dining room to the kitchen and brings food back — that waiter is the <strong>API</strong> (next section). You can't taste a dish from the dining room; you have to ask the kitchen. That's exactly how the browser asks the server for data.</p>
+        </div>
+
+        <p>In DIMS, the <strong>frontend</strong> is built with <span class="term" data-term="nextjs">Next.js</span> and <span class="term" data-term="react">React</span> and runs in the operator's browser; the <strong>backend</strong> is <span class="term" data-term="fastapi">FastAPI</span>, written in Python. The screenshot below is the dining room — the frontend the user sees — while a separate Python kitchen feeds it data.</p>
+        <figure>
+          <img src="../assets/img/screenshots/console-hero.jpeg" alt="The DIMS console — the frontend the operator sees in their browser">
+          <figcaption>The DIMS console: the <strong>frontend</strong> the user sees in a browser. The 3D terrain, drone, telemetry and alerts are all fed to it by the Python <strong>backend</strong>.</figcaption>
+        </figure>
+
+        <h2>The browser and the three web languages</h2>
+        <p>Everything in a browser — including <em>this very handbook</em> — is built from exactly three languages, each with one job:</p>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Language</th><th>Job</th><th>Restaurant role</th></tr></thead>
+          <tbody>
+            <tr><td><strong>HTML</strong></td><td>Structure &amp; content — the headings, paragraphs, buttons.</td><td>The bones of the page</td></tr>
+            <tr><td><strong>CSS</strong></td><td>Style — colours, fonts, spacing, layout.</td><td>The paint &amp; decoration</td></tr>
+            <tr><td><strong>JavaScript</strong></td><td>Behaviour — what happens when you click, type, or data updates.</td><td>The moving parts</td></tr>
+          </tbody>
+        </table></div>
+        <p>This page is an HTML file styled by a CSS file, with a little JavaScript filling in the sidebar and the read-time pill. <strong>…and that's why the DIMS console — being a web page — is ultimately HTML, CSS and JavaScript too</strong>, just generated by a framework instead of typed by hand.</p>
+
+        <h2>Frameworks &amp; libraries — why you don't build from scratch</h2>
+        <p>Writing every button, every network call, every 3D effect from raw JavaScript would take forever and be full of bugs. So developers stand on the shoulders of others by using:</p>
+        <ul>
+          <li>A <strong>library</strong> — a pack of pre-written code you call when you need it (you stay in charge).</li>
+          <li>A <strong>framework</strong> — a bigger structure that runs <em>your</em> code and gives the whole app a shape (it's in charge; you fill in the blanks).</li>
+        </ul>
+        <p>DIMS uses <span class="term" data-term="react">React</span> (a library for building the UI out of reusable <strong>components</strong> — think Lego bricks like “a button” or “an alert card”), wrapped in <span class="term" data-term="nextjs">Next.js</span> (a full web-app framework that handles pages, routing and serving). For the 3D digital twin it uses <span class="term" data-term="cesium">CesiumJS</span>, a library that renders real-world geographic terrain in the browser — we'll go deep on it in <a href="06-the-3d-twin.html">chapter 6</a> and <a href="14-dims-frontend.html">chapter 14</a>. <strong>…and that's why DIMS could build a flight console in months, not years.</strong></p>
+
+        <h2>How frontend and backend talk: APIs</h2>
+        <p>The frontend can't reach into the backend's memory — they're separate programs. They communicate by sending messages over the internet through an <span class="term" data-term="api">API</span> (Application Programming Interface): an agreed list of requests the backend will answer. The frontend sends a <strong>request</strong>; the backend sends back a <strong>response</strong>.</p>
+        <p>DIMS's API follows the <span class="term" data-term="rest">REST</span> style — the standard recipe for web APIs. Each request is made over <strong>HTTP</strong> (the web's transport protocol) using a <strong>verb</strong> that states intent:</p>
+        <ul>
+          <li><code>GET</code> — “give me data” (e.g. fetch the list of missions).</li>
+          <li><code>POST</code> — “here's new data, create/do something” (e.g. start a flight).</li>
+        </ul>
+        <p>The data itself travels as <strong>JSON</strong> — a simple, human-readable text format of keys and values that both Python and JavaScript understand. Here's a tiny REST exchange, the kind the DIMS console makes constantly:</p>
+        <pre><code>GET /api/missions/42        → the frontend asks the backend
+
+200 OK                      ← the backend answers
+{
+  "id": 42,
+  "name": "Bomunsan patrol",
+  "status": "flying",
+  "battery_pct": 87
+}</code></pre>
+        <p>One catch: a plain request/response is a one-time question. But the operator needs the drone's position to update <em>live</em>, many times a second, without re-asking. For that DIMS uses <span class="term" data-term="sse">SSE</span> (Server-Sent Events) — a kept-open connection where the <strong>backend pushes</strong> new data to the browser the moment it happens. <strong>…and that's why a new fire alert appears on your console instantly, with no refresh.</strong></p>
+
+        <h2>Databases — where the data lives</h2>
+        <p>The backend has to <em>remember</em> things between requests: missions, flight telemetry, alerts, registered devices. That permanent store is a <strong>database</strong>. DIMS uses a <strong>relational</strong> database, which organises data into tables of rows and columns (like a set of linked spreadsheets) — a “missions” table, an “alerts” table, and so on, with relationships between them.</p>
+        <p>The specific one is <span class="term" data-term="postgres">PostgreSQL</span> (“Postgres”), a battle-tested open-source relational database. Every mission you plan, every coordinate of telemetry, every alert raised, and every drone registered is a row in Postgres. <strong>…and that's why a flight you ran yesterday is still there to replay today.</strong></p>
+
+        <h2>The developer's toolbox</h2>
+        <p>You'll see these tools on every engineer's screen. You don't have to master them yet — just recognise them.</p>
+
+        <h3>The terminal (CLI)</h3>
+        <p>A <strong>terminal</strong> (or command-line interface, <strong>CLI</strong>) is a text window where you type commands instead of clicking. It looks intimidating but it's just a faster way to tell the computer to do things — start a server, run a script, move files.</p>
+
+        <h3>Git &amp; version control</h3>
+        <p><strong>Git</strong> is the time machine for code. It records every change as a <strong>commit</strong>, lets many people work on the same project without overwriting each other, and lets you roll back mistakes. A project tracked by Git is called a <strong>repository</strong> (“repo”). As you saw in <a href="01-what-is-dims.html">chapter 1</a>, DIMS has <strong>two repos</strong>: <code>dims-platform</code> (the real product) and <code>dims-showcase</code> (the prototype site). A typical Git moment:</p>
+        <pre><code>git add .
+git commit -m "Add live fire alert to console"
+git push</code></pre>
+
+        <h3>Package managers</h3>
+        <p>Remember those libraries and frameworks? A <strong>package manager</strong> downloads and installs them for you, with the correct versions. JavaScript uses <strong>npm</strong>; Python uses <strong>pip</strong> (DIMS uses a fast modern variant called <strong>uv</strong>). One command pulls in hundreds of building blocks. <strong>…and that's why React or CesiumJS land in the project without anyone copying files by hand.</strong></p>
+
+        <h3>Running a dev server</h3>
+        <p>While building, a developer “<strong>runs a dev server</strong>” — they start the app locally on their own machine so they can see changes instantly in a browser at an address like <code>localhost:3000</code>. It's the same app the world will use, just running privately for testing. The DIMS backend and frontend each run as their own dev server during development.</p>
+
+        <div class="callout note">
+          <div class="ct">Frontend vs backend — who does what</div>
+          <p>These two halves have totally different jobs. Flip between the tabs to lock it in.</p>
+        </div>
+        <div class="tabs">
+          <div class="tab-btns">
+            <button class="tab-btn">🖥️ Frontend (client)</button>
+            <button class="tab-btn">⚙️ Backend (server)</button>
+          </div>
+          <div class="tab-panel">
+            <p><strong>Runs in:</strong> the user's web browser.</p>
+            <p><strong>Built with:</strong> <span class="term" data-term="react">React</span> + <span class="term" data-term="nextjs">Next.js</span> (TypeScript), plus <span class="term" data-term="cesium">CesiumJS</span> for 3D.</p>
+            <p><strong>Job:</strong> draw the console, show the 3D twin and video, capture clicks, and <em>ask</em> the backend for data via the API / SSE.</p>
+            <p><strong>Does NOT:</strong> store data permanently or talk to the drone directly.</p>
+          </div>
+          <div class="tab-panel">
+            <p><strong>Runs on:</strong> a server machine (the DIMS cloud).</p>
+            <p><strong>Built with:</strong> <span class="term" data-term="fastapi">FastAPI</span> (Python).</p>
+            <p><strong>Job:</strong> the heavy lifting — talk to the dock &amp; drone, run AI on the video, raycast detections into coordinates, read/write <span class="term" data-term="postgres">Postgres</span>, and answer the frontend's API requests.</p>
+            <p><strong>Does NOT:</strong> render the screen — it only sends data.</p>
+          </div>
+        </div>
+
+        <details class="deep"><summary>Want the deep version? Where does the AI run, frontend or backend?</summary>
+          <div class="deep-body">
+            <p>The <span class="term" data-term="cv">computer-vision</span> AI that boxes fire and smoke runs on the <strong>backend</strong>, on a GPU, because it's heavy number-crunching that a browser can't do well. The backend takes the drone's video, runs the model, gets the boxes, turns them into coordinates, and then sends only the <em>results</em> (boxes + an alert) to the frontend over the API/SSE. So the impressive AI you see drawn on screen was actually computed in the Python kitchen and merely <em>displayed</em> in the dining room. More in <a href="15-ai-in-dims.html">chapter 15</a>.</p>
+          </div>
+        </details>
+
+        <div class="callout tip">
+          <div class="ct">✅ What you should now be able to say</div>
+          <p>“Software is instructions in a programming language; DIMS uses Python for the backend/AI and TypeScript for the frontend. Every web app splits into a frontend (runs in your browser — DIMS uses React + Next.js) and a backend (runs on a server — DIMS uses FastAPI in Python), like a restaurant's dining room and kitchen. They talk through a REST API over HTTP using JSON, and the backend pushes live updates via SSE. Data lives in a PostgreSQL database. Developers build with the terminal, Git (DIMS has two repos), package managers like npm and pip/uv, and by running a local dev server.”</p>
+        </div>
+
+        <p>Now that you speak the language, the next chapters can show you exactly how DIMS wires these pieces together.</p>
+
+        <div id="pager"></div>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

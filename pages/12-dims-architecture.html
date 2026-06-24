@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en" data-loc="page">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>12 · DIMS Platform Architecture — DIMS Intern Handbook</title>
+  <link rel="stylesheet" href="../assets/css/handbook.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%232dd4bf'/><text x='50' y='72' font-size='62' text-anchor='middle' fill='%23042' font-family='sans-serif' font-weight='bold'>D</text></svg>">
+  <script src="../assets/js/manifest.js"></script>
+  <script src="../assets/js/handbook.js" defer></script>
+</head>
+<body>
+  <div class="scrim"></div>
+  <div class="layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="content">
+      <header class="topbar" id="topbar"></header>
+      <main class="article" data-page-id="12-dims-architecture">
+
+        <div class="page-head">
+          <div class="kicker">THE SOFTWARE · 12</div>
+          <h1>DIMS Platform Architecture</h1>
+          <p class="lead">You now understand drones, AI, and software in the abstract. This chapter zooms out to the real thing: how the <strong>production platform</strong> — the code in our <code>dims-platform</code> repo — is actually wired together. Think of it as the map you’ll keep open while chapters 13–15 walk you through each room.</p>
+        </div>
+
+        <h2>One system, many small services</h2>
+        <p>DIMS isn’t a single giant program. It’s a set of small, focused <strong>services</strong> that each do one job and hand their output to the next — a design called <em>microservices</em>. The dock and drone in the field produce raw data; that data flows through a chain of services in our cloud; and at the far end an operator watches it all live in a browser. Your job as an intern is mostly to understand <em>where</em> in this chain your work fits.</p>
+
+        <div class="analogy">
+          <div class="ct">🧩 Analogy</div>
+          <p>Picture a postal sorting centre. A truck (the dock) drops off bags of mail (telemetry + video). One station receives them, another reads the labels, another decides where each item goes, another stamps it, and a final desk hands you a tidy parcel. Nobody does the whole job alone — each station does one thing well and passes it along. DIMS is built exactly like that: many small stations on one conveyor belt. The bonus is that each station can be tested on its own, with a fake feeding it, so we don’t need a real drone to build the platform.</p>
+        </div>
+
+        <div class="callout key">
+          <div class="ct">🔑 The one idea to remember: DIMS is the controller</div>
+          <p>The <span class="term" data-term="dock3">Dock 3</span> and <span class="term" data-term="m4td">Matrice 4TD</span> bind to <strong>our</strong> cloud over the <span class="term" data-term="cloudapi">DJI Cloud API</span> — <em>not</em> to DJI’s own <span class="term" data-term="flighthub">FlightHub 2</span>. Because we own every byte of telemetry, video, and command, we get full control over automation, our performance KPIs, and per-customer customization — which is what makes DIMS a product we can <strong>resell</strong>. The aircraft still owns its own onboard flight autonomy (obstacle avoidance, <span class="term" data-term="rth">RTH</span>, <span class="term" data-term="rtk">RTK</span> positioning, precision landing); our cloud <em>configures and commands</em> it, but the drone keeps itself safe in the air.</p>
+        </div>
+
+        <h2>The pipeline at a glance</h2>
+        <p>Here’s the whole spine of the system in one picture. Don’t memorise it — just notice the left-to-right flow: <strong>field → broker → bridge → media → AI → coordinates → alert → browser</strong>. We’ll walk each stage next.</p>
+
+        <figure>
+          <img src="../assets/img/diagrams/dims-architecture.svg" alt="DIMS end-to-end architecture: dock and drone in the field, through the message broker and bridge service, AI inference and coordinatizer, to the operator's browser console">
+          <figcaption>The DIMS platform end to end — from the dock in the field, through our cloud services, to the operator’s 3D console.</figcaption>
+        </figure>
+
+        <h2>Following the data, stage by stage</h2>
+
+        <h3>1 · From the field: MQTT over TLS</h3>
+        <p>The Dock 3 and the drone don’t open a web page to talk to us — they speak <span class="term" data-term="mqtt">MQTT</span>, a lightweight messaging protocol built for devices that send tiny status updates constantly. Every message is wrapped in <span class="term" data-term="tls">TLS</span> encryption so nobody on the network can read or tamper with it. This is the same Cloud API channel that carries the drone’s position, battery, and health one way, and our commands the other way.</p>
+
+        <h3>2 · The message broker: EMQX</h3>
+        <p>All those MQTT messages land first at <strong>EMQX</strong>, an MQTT <em>broker</em>. A broker is a post office: devices publish messages to named “topics”, and whoever cares about a topic subscribes to it. EMQX doesn’t understand drones — it just reliably routes messages between the hardware and our services, so the dock and our code never have to find each other directly.</p>
+
+        <h3>3 · The dji-bridge service</h3>
+        <p>This is the heart of DIMS’s control plane: a <span class="term" data-term="backend">backend</span> service called <strong>dji-bridge</strong>, written in Python with <span class="term" data-term="fastapi">FastAPI</span>. It’s the one service that actually speaks fluent DJI Cloud API — translating between raw MQTT and the rest of DIMS. Inside it are several focused <em>handler modules</em>, each owning one conversation with the dock:</p>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Handler</th><th>What it does</th></tr></thead>
+          <tbody>
+            <tr><td><strong>onboarding</strong></td><td>The first handshake — pushes config and license, runs <code>update_topo</code> to learn what devices are present, and binds them to our organization.</td></tr>
+            <tr><td><strong>flighttask</strong></td><td>Turns a mission into a flight: generates the <span class="term" data-term="wayline">wayline</span> as a WPML/<span class="term" data-term="kmz">KMZ</span> file, then <em>prepare → execute → progress</em> to launch it and track how far it’s flown.</td></tr>
+            <tr><td><strong>payload</strong></td><td>Controls the camera/gimbal: aim it, “look at” a point, capture a photo, zoom in.</td></tr>
+            <tr><td><strong>DRC</strong></td><td>Reactive control — <code>fly_to_point</code>, used when DIMS wants to send the drone somewhere <em>right now</em> (e.g. toward a fresh detection) rather than along a pre-planned route.</td></tr>
+            <tr><td><strong>media</strong></td><td>Gets temporary storage credentials so the dock can upload captured photos and videos into our object store.</td></tr>
+            <tr><td><strong>live</strong></td><td>Tells the dock to start pushing the live video stream to our media server.</td></tr>
+          </tbody>
+        </table></div>
+
+        <h3>4 · The media server: MediaMTX</h3>
+        <p>The live camera feed needs to travel from the drone to many viewers with very low delay. <span class="term" data-term="mediamtx">MediaMTX</span> is a media server that ingests the dock’s stream and re-broadcasts it — over <span class="term" data-term="webrtc">WebRTC</span> for the low-latency browser view, and RTMP for other consumers. Everything downstream that needs to <em>see</em> what the drone sees subscribes here.</p>
+
+        <h3>5 · AI inference</h3>
+        <p>The <strong>ai-inference</strong> service pulls frames from the media server and runs them through our <span class="term" data-term="yolo">YOLO</span> models (exported to the portable <span class="term" data-term="onnx">ONNX</span> format and accelerated on a <span class="term" data-term="gpu">GPU</span>). For each frame it produces <span class="term" data-term="inference">detections</span> — boxes around fire, smoke, or defects, each with a confidence score. At this point a detection is still just <em>pixels in a video frame</em>; it doesn’t yet know <em>where</em> in the world it is. Chapter 15 goes deep on the AI.</p>
+
+        <figure>
+          <img src="../assets/img/screenshots/2026-06-23-dock-live-console.png" alt="The DIMS console showing a real dock's live video feed inside the 3D twin">
+          <figcaption>The real Dock 3 live feed flowing through MediaMTX into the console — the same pipeline the AI reads from.</figcaption>
+        </figure>
+
+        <h3>6 · The coordinatizer</h3>
+        <p>This is the step that makes DIMS special. The <strong>coordinatizer</strong> takes each YOLO box and <span class="term" data-term="raycast">raycasts</span> it onto the DIMS 3D <span class="term" data-term="twin">digital twin</span> — geometrically, like shining a laser from the camera through the box and seeing where it hits the terrain. Where the ray lands is a real latitude/longitude. So “a smoke box at pixel (820, 410)” becomes “smoke at <em>this</em> exact spot on the mountain.” That conversion — pixels to a pin on the map — is the whole reason DIMS exists.</p>
+
+        <h3>7 · The scheduler and the rule/alert engine</h3>
+        <p>Two services close the loop. The <strong>scheduler</strong> runs recurring patrols — it dispatches missions on a timetable so the site is checked automatically. The <strong>rule/alert engine</strong> watches the coordinatized detections and decides when something is worth shouting about; when a rule fires, it raises an alert — targeting <strong>under 8 seconds</strong> end to end — and pushes it to the operator’s map, to mobile, and to the city’s disaster-safety platform API. That last hop is how a fire DIMS spots at Bomunsan reaches the people who respond to it.</p>
+
+        <h2>Where DIMS keeps its data</h2>
+        <p>Different kinds of data need different homes, so DIMS uses a few specialised stores rather than one database for everything:</p>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Store</th><th>Holds</th></tr></thead>
+          <tbody>
+            <tr><td><span class="term" data-term="postgres">PostgreSQL</span> + PostGIS + TimescaleDB</td><td>The main database. PostGIS adds <strong>geographic</strong> superpowers (waylines, coordinates, terrain) and TimescaleDB makes it fast at <strong>time-series</strong> data like the firehose of telemetry.</td></tr>
+            <tr><td>Redis</td><td>A super-fast in-memory store for short-lived IDs (e.g. task/flight IDs) and caching.</td></tr>
+            <tr><td>MinIO</td><td>Object storage for big binary files — the captured photos and recorded video. It speaks the same S3 API the cloud world uses, so it’s easy to swap for a cloud bucket later.</td></tr>
+          </tbody>
+        </table></div>
+
+        <h2>And the screen the operator uses</h2>
+        <p>All of the above is invisible plumbing. The part a human touches is the <span class="term" data-term="frontend">frontend</span>: a <span class="term" data-term="nextjs">Next.js</span> dashboard — the <strong>operator console</strong> — that draws the 3D terrain twin, the live feed, the telemetry HUD, and the alerts in one browser window. It reads from the same services we just walked through. Chapter 14 dissects every panel of it.</p>
+
+        <h2>Two repos: product vs prototype</h2>
+        <p>One last thing that will save you confusion on day one. CNS keeps the platform code in <strong>two separate repositories</strong>, and they are not the same thing:</p>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Repo</th><th>What it is</th></tr></thead>
+          <tbody>
+            <tr><td><code>dims-platform</code></td><td><strong>The production product</strong> — everything in this chapter. Our own Cloud API backend, the AI services, the data stores, and the operator console. This is where the real build happens.</td></tr>
+            <tr><td><code>dims-showcase</code></td><td><strong>The prototype</strong> — the marketing landing page + mission-control demo, live on dims.ai.kr. It’s untouched and stable; chapter 16 covers it.</td></tr>
+          </tbody>
+        </table></div>
+
+        <div class="callout note">
+          <div class="ct">Why microservices matter to you</div>
+          <p>Because each service does exactly one job, each one can be developed and tested <strong>in isolation</strong> — fed by a mock or by the full simulator instead of real hardware. That’s how the whole platform got built before a real drone ever connected. Chapter 13 introduces that simulator, your safest sandbox.</p>
+        </div>
+
+        <div class="callout tip">
+          <div class="ct">✅ What you should now be able to say</div>
+          <p>“DIMS is the controller: the Dock 3 and Matrice 4TD bind to our own Cloud API cloud, not FlightHub 2, so we own all the data. The pipeline runs field → MQTT-over-TLS → the EMQX broker → the dji-bridge service (onboarding, flighttask, payload, DRC, media, live) → MediaMTX media server → YOLO AI inference → the coordinatizer that raycasts each detection onto the 3D twin for real coordinates → a scheduler and alert engine that fire alerts in under 8 seconds to the map, mobile, and the city platform. It stores data in PostgreSQL/PostGIS/TimescaleDB, Redis, and MinIO, shows it in a Next.js console, and all of it lives in the <code>dims-platform</code> repo, separate from the <code>dims-showcase</code> prototype.”</p>
+        </div>
+
+        <p>Next, chapter 13 gets hands-on with the <span class="term" data-term="sitl">simulator</span> that lets you exercise this entire pipeline without a single piece of hardware.</p>
+
+        <div id="pager"></div>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

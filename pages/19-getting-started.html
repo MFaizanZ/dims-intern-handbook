@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en" data-loc="page">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>19 · Getting Started / Dev Setup — DIMS Intern Handbook</title>
+  <link rel="stylesheet" href="../assets/css/handbook.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%232dd4bf'/><text x='50' y='72' font-size='62' text-anchor='middle' fill='%23042' font-family='sans-serif' font-weight='bold'>D</text></svg>">
+  <script src="../assets/js/manifest.js"></script>
+  <script src="../assets/js/handbook.js" defer></script>
+</head>
+<body>
+  <div class="scrim"></div>
+  <div class="layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="content">
+      <header class="topbar" id="topbar"></header>
+      <main class="article" data-page-id="19-getting-started">
+
+        <div class="page-head">
+          <div class="kicker">Reference · 19</div>
+          <h1>Getting Started / Dev Setup</h1>
+          <p class="lead">A practical orientation for interns who’ll touch the code. This is a <em>map</em>, not a substitute for the repo’s own README — commands change, so always confirm against the live docs before you run them. The goal here is to know <strong>what</strong> the pieces are and <strong>where</strong> to look.</p>
+        </div>
+
+        <div class="callout warn">
+          <div class="ct">⚠ Read this first</div>
+          <p>Exact commands evolve. The <strong>authoritative</strong> sources are each repo’s <code>README.md</code> and <code>docs/INDEX.md</code> (the cross-repo doc map). When in doubt, follow those, and ask before running anything against <strong>real</strong> hardware.</p>
+        </div>
+
+        <h2>The two repositories</h2>
+        <p>Recall from chapters 12 &amp; 16 that there are two codebases. Know which you’re in:</p>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Repo</th><th>What</th><th>Stack</th></tr></thead>
+          <tbody>
+            <tr><td><code>dims-platform</code></td><td>The production product (<span class="term" data-term="backend">backend</span> + console).</td><td>Python/<span class="term" data-term="fastapi">FastAPI</span>, <span class="term" data-term="nextjs">Next.js</span></td></tr>
+            <tr><td><code>dims-showcase</code></td><td>The prototype/marketing site on dims.ai.kr.</td><td>Next.js 14</td></tr>
+          </tbody>
+        </table></div>
+        <p>The doc map (<code>dims-platform/docs/INDEX.md</code>) is the single index of where every piece of knowledge lives — bookmark it.</p>
+
+        <h2>Tools you’ll install</h2>
+        <div class="specs">
+          <div class="spec"><div class="k">Version control</div><div class="v" style="font-size:1.05rem">Git</div><div class="u">clone &amp; commit</div></div>
+          <div class="spec"><div class="k">JS runtime</div><div class="v" style="font-size:1.05rem">Node + pnpm</div><div class="u">the web app</div></div>
+          <div class="spec"><div class="k">Python</div><div class="v" style="font-size:1.05rem">3.12 + uv</div><div class="u">the backend</div></div>
+          <div class="spec"><div class="k">Containers</div><div class="v" style="font-size:1.05rem">Docker</div><div class="u">the stack</div></div>
+        </div>
+        <p><strong>What each is for:</strong> <em>Git</em> manages code history (ch 04). <em>pnpm</em> is a fast package manager for the JavaScript/Next.js side. <em>uv</em> is a fast Python environment/package manager. <em>Docker</em> runs the supporting services (database, message broker, storage) in isolated containers so everyone’s setup matches. There’s a <code>NEW-MACHINE-SETUP</code> doc for first-time setup on a fresh PC — run through it before anything else.</p>
+
+        <h2>Running the platform (the usual shape)</h2>
+        <p>The backend depends on a few services — the <span class="term" data-term="mqtt">MQTT</span> broker (EMQX), <span class="term" data-term="postgres">PostgreSQL</span>, MinIO (storage) and Redis. Docker brings them all up together:</p>
+        <pre><code># 1) bring up the supporting stack (EMQX + Postgres + MinIO + Redis)
+pnpm stack:up
+
+# 2) run the bridge + operator API (the backend, ch 13)
+cd services/dji-bridge
+uv run --env-file ../../.env python -m dji_bridge.operator
+
+# 3) in another terminal, run the web console (ch 14)
+pnpm dev</code></pre>
+        <p>Then open the console in your browser. The first time, you copy <code>.env.example</code> to <code>.env</code> and fill in local passwords + your DJI App credentials.</p>
+
+        <h3>Developing without a drone — the simulator</h3>
+        <p>You almost never need real hardware. The <span class="term" data-term="sitl">SITL</span> simulator role-plays a <span class="term" data-term="dock3">Dock 3</span> + <span class="term" data-term="m4td">M4TD</span> over the same broker (ch 13), so the whole pipeline — telemetry, a real flight model, media upload, AI, alerts — runs end-to-end on your laptop:</p>
+        <pre><code># start the virtual dock (only when NOT connected to a real dock)
+uv run --env-file scripts/demo/demo.env python -m dji_bridge.simulator</code></pre>
+        <div class="callout danger">
+          <div class="ct">⚠ Safety rule</div>
+          <p>Do <strong>not</strong> start the simulator (or push test schedules) while the backend is bound to a <strong>real</strong> <span class="term" data-term="dock3">Dock 3</span> — the real drone must never launch by accident. There’s an “armed” master gate in the UI (ch 14) that defaults to OFF for exactly this reason. When in doubt, stay in demo mode.</p>
+        </div>
+
+        <h3>The prototype site</h3>
+        <p>The separate showcase repo runs the classic Next.js way:</p>
+        <pre><code>cd dims-showcase
+npm install
+npm run dev</code></pre>
+
+        <h2>A couple of gotchas worth knowing early</h2>
+        <details class="deep">
+          <summary>GPU inference can silently fall back to CPU</summary>
+          <div class="deep-body"><p>As covered in chapter 15, a plain <code>uv run</code> can revert the Python env to the CPU-only build of onnxruntime, dropping AI inference from ~78 fps to ~12. If inference is suddenly slow, run the GPU repair script and use the <code>--no-sync</code> flag. This trips people up — now you know.</p></div>
+        </details>
+        <details class="deep">
+          <summary>Don’t kill every Node process to restart the dev server</summary>
+          <div class="deep-body"><p>Stopping <em>all</em> Node processes also kills tooling that rides on Node (like the browser-automation used for screenshots). To restart the web console, stop only the dev task / its port — not every Node process on the machine.</p></div>
+        </details>
+
+        <h2>Where to look when you’re stuck</h2>
+        <ul>
+          <li><code>dims-platform/README.md</code> — what the product is + quick start.</li>
+          <li><code>dims-platform/docs/INDEX.md</code> — the master doc map (everything links from here).</li>
+          <li><code>dims-platform/ARCHITECTURE.md</code> — the system design (ch 12).</li>
+          <li><code>dims-platform/docs/SIMULATOR.md</code> — the simulator run-book + honest sim-vs-real gaps.</li>
+          <li><code>dims-platform/STANDARDS.md</code> — the “no-slop” engineering rules the product holds to.</li>
+          <li>This handbook — for concepts. The repo docs — for exact, current commands.</li>
+        </ul>
+
+        <div class="callout tip">
+          <div class="ct">✅ What you should now be able to do</div>
+          <p>Identify which repo you’re in, install the core tools (Git, pnpm, uv, Docker), bring up the stack and the simulator to run DIMS end-to-end with no hardware, find the authoritative docs — and know the two safety rules: never auto-launch the real drone, and don’t kill all Node to restart.</p>
+        </div>
+
+        <div id="pager"></div>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

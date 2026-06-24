@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en" data-loc="page">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>09 · Matrice 300 / 350 RTK — DIMS Intern Handbook</title>
+  <link rel="stylesheet" href="../assets/css/handbook.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%232dd4bf'/><text x='50' y='72' font-size='62' text-anchor='middle' fill='%23042' font-family='sans-serif' font-weight='bold'>D</text></svg>">
+  <script src="../assets/js/manifest.js"></script>
+  <script src="../assets/js/handbook.js" defer></script>
+</head>
+<body>
+  <div class="scrim"></div>
+  <div class="layout">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="content">
+      <header class="topbar" id="topbar"></header>
+      <main class="article" data-page-id="09-matrice-300">
+
+        <div class="page-head">
+          <div class="kicker">THE HARDWARE · 09</div>
+          <h1>Matrice 300 / 350 RTK — the previous generation</h1>
+          <p class="lead">Before the dock-in-a-box drones we use today, DJI's flagship enterprise aircraft was a big, pilot-flown workhorse: the Matrice 300 RTK and its successor the Matrice 350 RTK. You won't fly DIMS on one — but you'll meet them in industry footage and reference data, so here's the context.</p>
+        </div>
+
+        <h2>Why this chapter exists</h2>
+        <p>The <span class="term" data-term="m4td">Matrice 4TD</span> in <a href="08-matrice-4td.html">chapter 08</a> is the drone DIMS actually commands today — it lives inside a <span class="term" data-term="dock3">Dock 3</span> and flies <em>by itself</em>. But the 4TD is the <strong>new</strong> generation. For five years before it, the enterprise drone everyone in the inspection world used was the <span class="term" data-term="m300">Matrice 300 RTK</span> (launched 2020) and then the upgraded <strong>Matrice 350 RTK</strong> (2023).</p>
+        <p>Interns should recognise these because they are everywhere: most industry inspection videos, training materials, and a lot of CNS's own reference footage were shot with an M300 or M350. Think of this chapter as "the previous generation, for context" — so when you see one, you know what it is and how it differs from what we fly now.</p>
+
+        <div class="analogy">
+          <div class="ct">🧩 Analogy</div>
+          <p>If the Matrice 4TD + Dock 3 is a self-driving car that lives in its own garage and drives itself, the Matrice 350 is the previous-generation luxury truck: powerful, big, carries a lot — but a <em>person</em> has to sit at the wheel and drive it. Same maker, same quality, totally different way of operating.</p>
+        </div>
+
+        <h2>The one big difference: pilot-flown, not dock-autonomous</h2>
+        <p>This is the headline. The M300/M350 are <strong>pilot-flown</strong>. A trained operator stands on site holding a physical controller, watches the camera feed on the controller's screen, and flies the aircraft by hand (or runs a pre-planned route they trigger manually). Fleets are managed from DJI's <span class="term" data-term="flighthub">FlightHub</span> cloud, and the pilot uses the <span class="term" data-term="pilot">DJI Pilot</span> app on the controller.</p>
+        <p>There is no dock by default — the drone is carried in a case, set up on the ground, launched, flown, landed, and packed away by people. Contrast that with the 4TD, which sits in a weatherproof <span class="term" data-term="dock">dock</span> on a rooftop and launches itself with nobody on site. That shift — from "a pilot and a case" to "a box that flies itself" — is the whole reason DIMS exists.</p>
+
+        <div class="callout key">
+          <div class="ct">🔑 The one idea to remember</div>
+          <p>M300/M350 = <strong>a human pilot flies it</strong> from a handheld controller. M4TD + Dock 3 = <strong>it flies itself</strong> from a dock. DIMS is built around the autonomous, dock-based model — the M350 is the manual predecessor.</p>
+        </div>
+
+        <h2>Meet the Matrice 350 RTK</h2>
+        <figure>
+          <img src="../assets/img/dji/matrice350-product.png" alt="DJI Matrice 350 RTK enterprise drone">
+          <figcaption>The Matrice 350 RTK — DJI's pilot-flown enterprise flagship, the generation before the Matrice 4 series. <span class="src">Source: DJI</span></figcaption>
+        </figure>
+
+        <p>Watch DJI's official intro to get a feel for its size and the modular cameras it carries:</p>
+        <div class="video">
+          <iframe src="https://www.youtube-nocookie.com/embed/JPPHG5dSpwM" title="Introducing DJI Matrice 350 RTK" allowfullscreen loading="lazy"></iframe>
+        </div>
+
+        <h2>Key specs (Matrice 350 RTK)</h2>
+        <p>These are approximate, rounded figures from DJI's official M350 RTK page. Treat them as "the right order of magnitude," not exact lab numbers.</p>
+        <div class="specs">
+          <div class="spec"><div class="k">Max flight time</div><div class="v">~55<span class="u">min</span></div><div class="u">no payload</div></div>
+          <div class="spec"><div class="k">Max payload</div><div class="v">~2.7<span class="u">kg</span></div><div class="u">up to 3 at once</div></div>
+          <div class="spec"><div class="k">Transmission range</div><div class="v">~15<span class="u">km</span></div><div class="u">OcuSync / O3 Enterprise</div></div>
+          <div class="spec"><div class="k">Obstacle sensing</div><div class="v">6<span class="u">-dir</span></div><div class="u">all directions</div></div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Spec</th><th>Matrice 350 RTK (approx.)</th><th>Why it matters</th></tr></thead>
+            <tbody>
+              <tr><td>Max flight time</td><td>up to ~55 min</td><td>Long missions over big sites without landing to swap.</td></tr>
+              <tr><td>Batteries</td><td>Dual hot-swappable (TB60 / TB65)</td><td>Two packs at once; swap one without powering down.</td></tr>
+              <tr><td>Max payload</td><td>~2.7 kg, up to 3 payloads</td><td>Heavy-lift: carry several sensors on one flight.</td></tr>
+              <tr><td>Weather resistance</td><td>IP45 rated</td><td>Flies in rain and dust — built for the field.</td></tr>
+              <tr><td>Obstacle sensing</td><td>6-directional</td><td>Detects obstacles all around for safer manual flight.</td></tr>
+              <tr><td>Transmission</td><td>OcuSync / O3 Enterprise, ~15 km</td><td>Strong, long-range video + control link.</td></tr>
+              <tr><td>Positioning</td><td>Built-in <span class="term" data-term="rtk">RTK</span></td><td>Centimetre-level GPS for repeatable, precise routes.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout note">
+          <div class="ct">What's "RTK"?</div>
+          <p><span class="term" data-term="rtk">RTK</span> (Real-Time Kinematic) is a way of correcting GPS down to centimetre accuracy instead of the usual several metres. That's why these aircraft have "RTK" in their name — precise positioning is essential for flying the <em>exact same</em> inspection route every time.</p>
+        </div>
+
+        <h2>The Zenmuse payload ecosystem</h2>
+        <p>The M300/M350's superpower is that the camera is <strong>not</strong> built in — it's modular. The aircraft has a standardised mount, and you clip on whichever <span class="term" data-term="zenmuse">Zenmuse</span> <span class="term" data-term="payload">payload</span> (DJI's family of swappable sensors) the job needs. A <span class="term" data-term="gimbal">gimbal</span> — the motorised cradle that keeps the camera steady and pointed — holds each one.</p>
+        <p>Common Zenmuse payloads you'll hear about:</p>
+        <ul>
+          <li><strong>H20 / H20T</strong> — multi-sensor cameras combining a zoom camera, a wide camera, a laser rangefinder, and (on the H20T) a thermal camera.</li>
+          <li><strong>P1</strong> — a high-resolution full-frame camera for <span class="term" data-term="photogrammetry">photogrammetry</span> (building 3D models from overlapping photos).</li>
+          <li><strong>L1 / L2</strong> — <span class="term" data-term="lidar">LiDAR</span> units that scan the world with laser pulses to capture precise 3D point clouds.</li>
+        </ul>
+        <p>We go deep on what each sensor actually does — RGB, thermal, LiDAR, and more — in <a href="10-sensors-payloads.html">chapter 10 (Sensors &amp; Payloads)</a>. For now just hold onto the idea: <strong>one airframe, many interchangeable eyes.</strong></p>
+
+        <h2>Why heavy-lift + multiple payloads matter</h2>
+        <p>Carrying ~2.7 kg and up to three payloads at once sounds like a spec-sheet brag, but it's genuinely useful for inspection. On a single flight you can mount, say, a thermal camera <em>and</em> a high-zoom camera <em>and</em> a LiDAR, and capture all three data types in one pass instead of flying three separate missions. For big or hard-to-reach assets — power lines, large facilities, structures CNS studies for tower-crane inspection — that capacity saves time and battery, and keeps every sensor's data perfectly aligned because it was all captured together.</p>
+
+        <details class="deep">
+          <summary>Want the deep version? M350 vs the Matrice 4 series</summary>
+          <div class="deep-body">
+            <p>The Matrice 4 series (including our <span class="term" data-term="m4td">4TD</span>) went a different direction from the M350. Instead of a heavy airframe with bolt-on Zenmuse modules, the M4 is <strong>smaller and lighter</strong> with its multi-sensor camera built in, and — crucially — it's designed to live in a <span class="term" data-term="dock3">Dock 3</span> and operate fully autonomously via <span class="term" data-term="dji">DJI</span>'s Cloud API. So the trade is roughly: the M350 wins on raw lift and swappable big sensors and flexibility for a skilled pilot; the M4TD wins on autonomy, smaller footprint, dock-based 24/7 operation, and being directly drivable by software like DIMS. They serve different operating models, which is exactly why DIMS targets the dock-based one.</p>
+          </div>
+        </details>
+
+        <div class="callout warn">
+          <div class="ct">⚠ Don't confuse the generations</div>
+          <p>When you read DIMS docs or watch a demo, the live drone is the <strong>Matrice 4TD</strong>. If you see a bigger drone with a separate handheld controller and a clip-on camera in reference footage, that's an <strong>M300/M350</strong> — the previous generation, here for context, not what DIMS flies.</p>
+        </div>
+
+        <div class="callout tip">
+          <div class="ct">✅ What you should now be able to say</div>
+          <p>"The Matrice 300 RTK (2020) and Matrice 350 RTK (2023) were DJI's previous-generation enterprise flagships — big, heavy-lift, weather-resistant drones that a human pilot flies from a handheld controller and manages in FlightHub. They carry swappable Zenmuse payloads (H20T thermal, P1 photogrammetry, L1/L2 LiDAR), up to three at once, with ~55-minute flights and centimetre-level RTK positioning. DIMS doesn't fly them — it's built for the dock-autonomous Matrice 4TD — but they're the common industry reference hardware and the predecessor to what we use today."</p>
+        </div>
+
+        <p>Next we open up the sensors themselves — what RGB, thermal, LiDAR, and multispectral payloads actually see, and why each one matters for inspection.</p>
+
+        <div id="pager"></div>
+      </main>
+    </div>
+  </div>
+</body>
+</html>
