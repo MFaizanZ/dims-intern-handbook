@@ -83,6 +83,61 @@
           <p>A fire seen as a cluster of orange pixels becomes <code>36.32°N, 127.39°E</code>. That single conversion is DIMS’s signature capability — it’s why an operator gets a pin on a map instead of “somewhere in this video”.</p>
         </div>
 
+        <h3>The math — how a pixel becomes a coordinate</h3>
+        <p>Here is the algorithm in full. It is classic <span class="term" data-term="raycast">ray casting</span>: build one straight line (a “ray”) starting at the camera and pointing through the detected pixel, then find where that line first hits the ground. Everything below is just turning “a pixel + where the camera was + which way it looked” into a 3D line, and intersecting it with the terrain.</p>
+
+        <figure>
+          <img src="../assets/img/diagrams/raycast-geometry.svg" alt="Geometry of the raycast: camera origin, ray through a pixel, and the hit on the DSM surface">
+          <figcaption>The geometry: a ray leaves the camera <code>C</code>, points in direction <code>d</code> (set by the pixel + camera angles), and the first surface hit <code>P(t*)</code> is the answer — converted to latitude/longitude.</figcaption>
+        </figure>
+
+        <h4>Inputs — what the algorithm needs</h4>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Input</th><th>Where it comes from</th><th>Why it’s needed</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Camera position</strong> <code>C = (x,y,z)</code></td><td>Drone <span class="term" data-term="rtk">RTK</span> GNSS (lat/lon/alt, ~cm accurate) — from <span class="term" data-term="osd">OSD</span> telemetry / photo XMP</td><td>The ray’s <em>origin</em> in 3D space.</td></tr>
+            <tr><td><strong>Camera orientation</strong></td><td>Aircraft heading + <span class="term" data-term="gimbal">gimbal</span> yaw / pitch / roll</td><td>Which way the camera (and so the ray) points.</td></tr>
+            <tr><td><strong>Camera intrinsics</strong></td><td>The M4TD lens: field of view / focal length, image width·height, principal point (wide cam ≈ 74.3°×46.2°). Each lens (wide/tele/thermal) differs.</td><td>Turns a pixel <code>(u,v)</code> into a precise direction.</td></tr>
+            <tr><td><strong>Detection pixel</strong> <code>(u,v)</code></td><td>The <span class="term" data-term="yolo">YOLO</span> <span class="term" data-term="bbox">bounding-box</span> centre</td><td>Which pixel to shoot the ray through.</td></tr>
+            <tr><td><strong>The surface</strong></td><td>A <span class="term" data-term="dsm">DSM</span> height-grid (GeoTIFF) or a 3D mesh (OBJ/PLY), from <span class="term" data-term="terra">DJI Terra</span></td><td>What the ray hits — the “ground” in 3D.</td></tr>
+          </tbody>
+        </table></div>
+
+        <h4>The algorithm, step by step</h4>
+        <p><strong>1. Pixel → a direction in the camera’s own frame.</strong> Normalise the pixel to the lens’s field of view (W·H = image size; HFOV/VFOV = the lens angles):</p>
+        <pre><code>ax = (2·u / W − 1) · tan(HFOV / 2)
+ay = (1 − 2·v / H) · tan(VFOV / 2)
+d_cam = normalize( [ ax , ay , 1 ] )        # unit ray, +z = straight ahead</code></pre>
+        <p>(Equivalently, with focal lengths/principal point: <code>d_cam = normalize([ (u−cx)/fx , (v−cy)/fy , 1 ])</code>.)</p>
+
+        <p><strong>2. Rotate that direction into the real world.</strong> Build a rotation matrix <code>R</code> from the heading + gimbal angles, then rotate:</p>
+        <pre><code>R = Rz(heading) · Ry(pitch) · Rx(roll)      # 3×3 rotation
+d_world = R · d_cam                          # ray direction in world axes</code></pre>
+        <p>(Getting <code>pitch</code>/<code>roll</code>/<code>yaw</code> from the gimbal right is the fiddly part — a parsing bug here is why DIMS specifically made sure <code>gimbal_yaw/roll</code> are read correctly.)</p>
+
+        <p><strong>3. Place the ray’s origin.</strong> Convert the drone’s RTK fix into the same flat, metres-based frame as the surface (a local UTM / ENU frame):</p>
+        <pre><code>C = geodetic_to_local( lat, lon, alt )       # cm-accurate origin, in metres</code></pre>
+
+        <p><strong>4. Shoot the ray and find the first hit.</strong> The ray is every point <code>P(t)</code> for distance <code>t &gt; 0</code>:</p>
+        <pre><code>P(t) = C + t · d_world
+
+# DSM (height-grid): march along t, comparing the ray's height to the terrain,
+# until the ray drops below the surface, then bisection-refine for the exact crossing:
+find smallest t*  such that   P_z(t*) = h( P_x(t*), P_y(t*) )
+
+# Mesh (OBJ/PLY): test the ray against triangles (Möller–Trumbore), keep the nearest hit.</code></pre>
+
+        <p><strong>5. Convert the hit back to GPS.</strong> <code>P(t*)</code> is in local metres; turn it back into global coordinates (correcting meridian convergence so true-north is exact):</p>
+        <pre><code>(lat, lon, elev) = local_to_geodetic( P(t*) )    # pyproj: UTM → WGS84 (SRID 4326)</code></pre>
+
+        <h4>Output</h4>
+        <p>A single real-world point — <code>world_xyz = (lat, lon, elevation)</code> — stored as a PostGIS <code>PointZ</code> in <span class="term" data-term="wgs84">WGS84</span>. <strong>That point is the alert’s location.</strong> One pixel in, one coordinate out.</p>
+
+        <div class="callout note">
+          <div class="ct">📐 Why small angles matter</div>
+          <p>The ground error grows with distance: a pointing error of angle <code>ε</code> at slant range <code>r</code> lands roughly <code>r · ε</code> off. For example <strong>0.5°</strong> (≈0.0087 rad) at <strong>300 m</strong> ≈ <strong>2.6 m</strong> on the ground. So RTK position (cm), gimbal-angle precision, lens calibration, and DSM resolution <em>all</em> feed the final accuracy — and the M4TD’s <span class="term" data-term="raycast">laser rangefinder</span> (which measures <code>r</code> directly) is a great cross-check.</p>
+        </div>
+
         <details class="deep">
           <summary>Want the deep version? Laser vs raycast for coordinates</summary>
           <div class="deep-body">
