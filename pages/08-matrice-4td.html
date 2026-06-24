@@ -105,7 +105,7 @@
           <div class="spec"><div class="k">Laser accuracy</div><div class="v">±0.2<span class="u">m</span></div><div class="u">distance error</div></div>
         </div>
 
-        <p>Here’s why it matters. To turn “I see a fire in the video” into “the fire is at <em>this</em> latitude/longitude,” DIMS needs to know <strong>how far away</strong> the thing is. Normally we estimate that by <span class="term" data-term="raycast">raycasting</span> — shooting an imaginary line from the camera onto a 3D terrain model and seeing where it hits (covered in <a href="06-the-big-loop.html">chapter 06</a> and <a href="15-ai-in-dims.html">chapter 15</a>). The laser gives us that distance <strong>directly and precisely</strong>: aim the camera at the target, fire the laser, read the exact range. Combine the drone’s position, its gimbal angles, and that laser distance, and you get a <strong>direct geolocation</strong> of the fire or defect — no terrain-model guesswork needed.</p>
+        <p>Here’s why it matters. To turn “I see a fire in the video” into “the fire is at <em>this</em> latitude/longitude,” DIMS needs to know <strong>how far away</strong> the thing is. Normally we estimate that by <span class="term" data-term="raycast">raycasting</span> — shooting an imaginary line from the camera onto a 3D terrain model and seeing where it hits (covered in <a href="06-maps-3d-101.html">chapter 06</a> and <a href="15-ai-in-dims.html">chapter 15</a>). The laser gives us that distance <strong>directly and precisely</strong>: aim the camera at the target, fire the laser, read the exact range. Combine the drone’s position, its gimbal angles, and that laser distance, and you get a <strong>direct geolocation</strong> of the fire or defect — no terrain-model guesswork needed.</p>
 
         <div class="callout key">
           <div class="ct">🔑 The one idea to remember</div>
@@ -142,7 +142,7 @@
             <p>The camera feed itself, restreamed so the operator (and the AI) can watch in the browser. This is what the <span class="term" data-term="yolo">YOLO</span> models analyse frame-by-frame to find fire, smoke, and defects.</p>
           </div>
         </div>
-        <p>Those gimbal angles in the telemetry aren’t just for show — they’re an input to the geolocation math. Knowing exactly which way the camera was pointing (yaw + pitch) is half of turning a detection into a coordinate. See <a href="10-sensors.html">chapter 10</a> for a deeper dive on the sensors, and <a href="06-the-big-loop.html">chapter 06</a> for how telemetry feeds the detection loop.</p>
+        <p>Those gimbal angles in the telemetry aren’t just for show — they’re an input to the geolocation math. Knowing exactly which way the camera was pointing (yaw + pitch) is half of turning a detection into a coordinate. See <a href="10-sensors.html">chapter 10</a> for a deeper dive on the sensors, and <a href="06-maps-3d-101.html">chapter 06</a> for how telemetry feeds the detection loop.</p>
 
         <details class="deep">
           <summary>Want the deep version? Why a dock-specific “D” model at all?</summary>
@@ -157,6 +157,11 @@
         </div>
 
         <p>Next we’ll look at the other aircraft in CNS’s world and how they compare.</p>
+
+        <div class="callout note">
+          <div class="ct">📘 Official DJI manual</div>
+          <p>Specs, user manual &amp; firmware: <a href="https://enterprise.dji.com/matrice-4-series/specs" target="_blank" rel="noopener">Matrice 4 Series specs</a> · <a href="https://enterprise.dji.com/matrice-4-series/downloads" target="_blank" rel="noopener">downloads</a>. Full link list in <a href="20-watch-and-read.html">chapter 20</a>.</p>
+        </div>
 
         <div id="pager"></div>
       </main>

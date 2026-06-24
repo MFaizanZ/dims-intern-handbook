@@ -31,7 +31,7 @@
           <p>Think of a robot vacuum and its charging dock. The vacuum leaves on a schedule, cleans, and returns to its base to recharge — you never touch it. The <span class="term" data-term="dock3">DJI Dock 3</span> is that base, except the “vacuum” is an inspection drone, the “floor” is a forest or a tower crane, and the base is a 55-kilogram weatherproof station built to survive years outdoors.</p>
         </div>
 
-        <p>The <span class="term" data-term="dji">DJI</span> Dock 3 is DJI’s <strong>third-generation</strong> dock. It houses a single <span class="term" data-term="m4td">Matrice 4D-series</span> drone, and DIMS commands a <em>real</em> Dock 3 remotely over the <span class="term" data-term="cloudapi">DJI Cloud API</span> — the messaging protocol we cover in <a href="10-cloud-api.html">chapter 10</a>. That remote command is what makes <span class="term" data-term="bvlos">BVLOS</span> (Beyond Visual Line Of Sight — flying where no operator can physically see the drone) possible.</p>
+        <p>The <span class="term" data-term="dji">DJI</span> Dock 3 is DJI’s <strong>third-generation</strong> dock. It houses a single <span class="term" data-term="m4td">Matrice 4D-series</span> drone, and DIMS commands a <em>real</em> Dock 3 remotely over the <span class="term" data-term="cloudapi">DJI Cloud API</span> — the messaging protocol we cover in <a href="11-dji-software.html">chapter 11</a>. That remote command is what makes <span class="term" data-term="bvlos">BVLOS</span> (Beyond Visual Line Of Sight — flying where no operator can physically see the drone) possible.</p>
 
         <div class="img-2">
           <figure>
@@ -66,7 +66,7 @@
 
         <div class="callout warn">
           <div class="ct">⚠ With great autonomy…</div>
-          <p>A real dock launching a real drone with no one present is powerful and dangerous. DIMS deliberately forbids the real dock from auto-deploying carelessly (e.g. on a stray timer) — there is a “scheduler armed” master gate that defaults to <strong>off</strong>. We cover the full safety regime in <a href="19-safety-rules.html">chapter 19</a>.</p>
+          <p>A real dock launching a real drone with no one present is powerful and dangerous. DIMS deliberately forbids the real dock from auto-deploying carelessly (e.g. on a stray timer) — there is a “scheduler armed” master gate that defaults to <strong>off</strong>. We cover the full safety regime in <a href="19-getting-started.html">chapter 19</a>.</p>
         </div>
 
         <h2>The official specs</h2>
@@ -130,7 +130,7 @@
 
         <div class="callout tip">
           <div class="ct">💡 For DIMS specifically</div>
-          <p>As of June 2026 a real Dock 3 + <span class="term" data-term="m4td">Matrice 4TD</span> is connected to DIMS over the Cloud API — telemetry and control proven on actual hardware. Commands and status flow over <span class="term" data-term="mqtt">MQTT</span>, the lightweight messaging system the Cloud API runs on (chapter 10).</p>
+          <p>As of June 2026 a real Dock 3 + <span class="term" data-term="m4td">Matrice 4TD</span> is connected to DIMS over the Cloud API — telemetry and control proven on actual hardware. Commands and status flow over <span class="term" data-term="mqtt">MQTT</span>, the lightweight messaging system the Cloud API runs on (chapter 11).</p>
         </div>
 
         <h2>A real Dock 3, live in DIMS</h2>
@@ -149,7 +149,7 @@
         <details class="deep">
           <summary>Want the deep version? How DIMS actually controls the dock</summary>
           <div class="deep-body">
-            <p>DIMS never plugs a cable into the dock. The dock connects out to our cloud over the network (gigabit Ethernet, or 4G via the Cellular Dongle 2) and authenticates against our organisation. From then on, every action — open cover, launch, take a photo, return home, force-close cover — is a structured message over <span class="term" data-term="mqtt">MQTT</span> following the <span class="term" data-term="cloudapi">Cloud API</span> spec. The dock streams back its own telemetry (battery, cover state, weather, network) separately from the <em>aircraft’s</em> telemetry, which is one of the subtleties our backend has to untangle. Binding a Dock 3 needed two fixes versus Dock 2: a config field had to be sent as a string, and the org-bind reply needed per-device error info. Detail lives in <a href="10-cloud-api.html">chapter 10</a>.</p>
+            <p>DIMS never plugs a cable into the dock. The dock connects out to our cloud over the network (gigabit Ethernet, or 4G via the Cellular Dongle 2) and authenticates against our organisation. From then on, every action — open cover, launch, take a photo, return home, force-close cover — is a structured message over <span class="term" data-term="mqtt">MQTT</span> following the <span class="term" data-term="cloudapi">Cloud API</span> spec. The dock streams back its own telemetry (battery, cover state, weather, network) separately from the <em>aircraft’s</em> telemetry, which is one of the subtleties our backend has to untangle. Binding a Dock 3 needed two fixes versus Dock 2: a config field had to be sent as a string, and the org-bind reply needed per-device error info. Detail lives in <a href="13-dims-backend.html">chapter 13</a>.</p>
           </div>
         </details>
 
@@ -159,6 +159,11 @@
         </div>
 
         <p>Next we meet the aircraft that lives inside it: the Matrice 4TD.</p>
+
+        <div class="callout note">
+          <div class="ct">📘 Official DJI manual</div>
+          <p>Specs, user manual &amp; firmware: <a href="https://enterprise.dji.com/dock-3/specs" target="_blank" rel="noopener">Dock 3 specs</a> · <a href="https://www.dji.com/downloads/products/dock-3" target="_blank" rel="noopener">downloads</a>. Full link list in <a href="20-watch-and-read.html">chapter 20</a>.</p>
+        </div>
 
         <div id="pager"></div>
       </main>
