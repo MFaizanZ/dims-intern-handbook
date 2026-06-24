@@ -139,6 +139,53 @@ find smallest t*  such that   P_z(t*) = h( P_x(t*), P_y(t*) )
         </div>
 
         <details class="deep">
+          <summary>📐 For the mathematician — the named algorithms &amp; full derivation</summary>
+          <div class="deep-body">
+            <p>The pipeline is <strong>ray casting</strong> — a single primary ray, nearest-hit (the base case of ray tracing). It decomposes into four named sub-algorithms.</p>
+
+            <p><strong>1 · Pixel → ray: inverse pinhole projection.</strong> With the intrinsic matrix <code>K</code>, back-project the homogeneous pixel <code>x̃=[u,v,1]ᵀ</code>:</p>
+            <pre><code>K = | fx  0  cx |     fx = W / (2·tan(HFOV/2)),  fy = H / (2·tan(VFOV/2))
+    |  0 fy  cy |     (cx,cy) = principal point ≈ image centre
+    |  0  0   1 |
+
+d_cam = K⁻¹ · x̃ ,   d̂_cam = d_cam / ‖d_cam‖     # unit ray in camera frame</code></pre>
+
+            <p><strong>2 · Orientation: a rotation in SO(3).</strong> Compose Tait–Bryan (Euler ZYX) angles from heading ψ, gimbal pitch θ, roll φ:</p>
+            <pre><code>R = Rz(ψ)·Ry(θ)·Rx(φ)  ∈ SO(3)      (RᵀR = I,  det R = +1)
+d = R · d̂_cam                        # ray direction in world axes
+ray:  P(t) = C + t·d ,   t > 0       # C = camera origin (step 3)</code></pre>
+
+            <p><strong>3 · The intersection — this is the core algorithm, and it depends on the surface type.</strong></p>
+            <p><em>Triangle mesh → the <strong>Möller–Trumbore</strong> algorithm</em> (Möller &amp; Trumbore, 1997). Solve <code>C + t·d = (1−u−v)V₀ + u·V₁ + v·V₂</code> for the barycentric pair <code>(u,v)</code> and depth <code>t</code> via Cramer’s rule / triple products:</p>
+            <pre><code>E1 = V1 − V0 ,  E2 = V2 − V0
+P  = d × E2 ,   det = E1 · P              # |det| ≈ 0  ⇒  ray ∥ triangle (no hit)
+inv = 1/det ,   T = C − V0
+u = inv·(T · P)                           # valid hit needs  0 ≤ u
+Q = T × E1
+v = inv·(d · Q)                           #                  0 ≤ v  and  u+v ≤ 1
+t = inv·(E2 · Q)                          #                  t > 0
+hit = C + t·d ,   barycentric = (1−u−v, u, v)</code></pre>
+            <p>Testing every triangle is O(n); DIMS uses a <strong>BVH (bounding-volume hierarchy)</strong> so nearest-hit is ~O(log n).</p>
+
+            <p><em>DSM raster (height-grid <code>h(x,y)</code>) → grid traversal + root-finding.</em> Reduce to a 1-D root problem:</p>
+            <pre><code>f(t) = P_z(t) − h( P_x(t), P_y(t) )       # h bilinearly interpolated within each cell
+goal: smallest t* > 0 with f(t*) = 0</code></pre>
+            <p>March the ray cell-by-cell with the <strong>Amanatides–Woo fast voxel-traversal</strong> algorithm (1987) — an exact grid DDA that visits every crossed cell in order, none skipped. When <code>f</code> changes sign across a cell the root is bracketed, then refine with <strong>bisection</strong> (or regula-falsi / secant) to tolerance. This is the “primary” path DIMS uses, since the terrain is a DSM.</p>
+
+            <p><strong>4 · Local metres ↔ global coordinates: map projection (PROJ).</strong> Geodetic→ECEF uses the prime-vertical radius <code>N(φ)</code>; in practice DIMS projects to UTM (Transverse Mercator) for a flat metric working frame and inverts at the end:</p>
+            <pre><code>N(φ) = a / √(1 − e²·sin²φ)
+X = (N+h)cosφ cosλ ,  Y = (N+h)cosφ sinλ ,  Z = (N(1−e²)+h) sinφ
+… project/​invert via Transverse Mercator (pyproj/PROJ) …
+meridian convergence  γ ≈ (λ − λ₀)·sinφ      # grid-north vs true-north, corrected so ψ is true</code></pre>
+
+            <p><strong>Error propagation &amp; conditioning</strong> (first order): <code>δP* ≈ J·δ(inputs)</code> with Jacobian <code>J = ∂P*/∂(C,R,K,surface)</code>. The dominant term turns an angular error <code>δα</code> into a ground error</p>
+            <pre><code>‖δP*‖  ≈  r · δα / cos(i)
+   r = slant range,   i = incidence angle between the ray and the surface normal</code></pre>
+            <p>So the problem is <strong>ill-conditioned at grazing incidence</strong> (<code>i → 90°</code>, ray nearly tangent to a distant hillside): <code>1/cos(i)</code> blows up. Steep, close shots — DIMS’s deliberate “close loiter” over the target — are the best-conditioned, which is exactly why that demo tactic tightened the error. This conditioning argument, not just the RTK spec, is the real reason the geometry is chosen the way it is.</p>
+          </div>
+        </details>
+
+        <details class="deep">
           <summary>Want the deep version? Laser vs raycast for coordinates</summary>
           <div class="deep-body">
             <p>There are two ways to geolocate a target. The <strong>primary</strong> method is the raycast described above — it works from any detection, using the terrain twin. The <strong>bonus</strong> method is the M4TD’s <strong>laser rangefinder</strong> (ch 08): point the laser at the target and it returns an exact distance, which combined with the drone pose gives a coordinate directly — no terrain model needed. DJI documents the laser “PinPoint” command for some older payloads but not officially for the M4TD, so DIMS treats raycast as primary and the laser as something to verify on real hardware.</p>
